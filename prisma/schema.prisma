@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         String    @default("user") // "user" | "admin"
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  bookings     Booking[]
+
+  @@map("users")
+}
+
+model Station {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  city      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  routeStops RouteStop[]
+
+  @@map("stations")
+}
+
+model Route {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  stops  RouteStop[]
+  trains Train[]
+
+  @@map("routes")
+}
+
+model RouteStop {
+  id         String  @id @default(uuid())
+  routeId    String  @map("route_id")
+  stationId  String  @map("station_id")
+  orderIndex Int     @map("order_index")
+
+  route   Route   @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  station Station @relation(fields: [stationId], references: [id], onDelete: Restrict)
+
+  @@unique([routeId, orderIndex])
+  @@unique([routeId, stationId])
+  @@map("route_stops")
+}
+
+model Train {
+  id            String   @id @default(uuid())
+  number        String   @unique
+  routeId       String   @map("route_id")
+  departureTime DateTime @map("departure_time")
+  arrivalTime   DateTime @map("arrival_time")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  route     Route      @relation(fields: [routeId], references: [id], onDelete: Restrict)
+  carriages Carriage[]
+  bookings  Booking[]
+
+  @@map("trains")
+}
+
+model Carriage {
+  id      String @id @default(uuid())
+  number  Int
+  type    String // "platskart" | "coupe" | "sv"
+  trainId String @map("train_id")
+
+  train Train  @relation(fields: [trainId], references: [id], onDelete: Cascade)
+  seats Seat[]
+
+  @@unique([trainId, number])
+  @@map("carriages")
+}
+
+model Seat {
+  id         String @id @default(uuid())
+  number     Int
+  carriageId String @map("carriage_id")
+
+  carriage Carriage  @relation(fields: [carriageId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@unique([carriageId, number])
+  @@map("seats")
+}
+
+model Booking {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  trainId    String   @map("train_id")
+  seatId     String   @map("seat_id")
+  travelDate DateTime @map("travel_date")
+  status     String   @default("created") // "created" | "cancelled"
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  train Train @relation(fields: [trainId], references: [id], onDelete: Restrict)
+  seat  Seat  @relation(fields: [seatId], references: [id], onDelete: Restrict)
+
+  @@unique([seatId, trainId, travelDate])
+  @@map("bookings")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("refresh_tokens")
+}
