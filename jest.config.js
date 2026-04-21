@@ -3,12 +3,14 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/tests'],
+  transform: {
+    '^.+\\.ts$': ['ts-jest', {
+      tsconfig: 'tests/tsconfig.json',
+    }],
+  },
+  // Mock uuid since v14 is ESM-only and Jest runs in CJS mode
   moduleNameMapper: {
-    '^@domain/(.*)$': '<rootDir>/src/domain/$1',
-    '^@application/(.*)$': '<rootDir>/src/application/$1',
-    '^@infrastructure/(.*)$': '<rootDir>/src/infrastructure/$1',
-    '^@presentation/(.*)$': '<rootDir>/src/presentation/$1',
-    '^@config/(.*)$': '<rootDir>/src/config/$1',
+    '^uuid$': '<rootDir>/tests/helpers/uuid-mock.ts',
   },
   collectCoverageFrom: [
     'src/**/*.ts',
