@@ -4,8 +4,6 @@
 
 ## Технології
 
-| Компонент | Технологія |
-|-----------|-----------|
 | Backend | Node.js, Express, TypeScript |
 | Frontend | React, Vite, TypeScript |
 | БД | PostgreSQL |
