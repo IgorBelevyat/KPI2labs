@@ -50,6 +50,7 @@ import { BookingController } from './presentation/controllers/booking-controller
 
 import { createAuthMiddleware } from './presentation/middleware/auth-middleware';
 import { errorHandler } from './presentation/middleware/error-handler';
+import { contentNegotiation } from './presentation/middleware/content-negotiation';
 import { createApiRouter } from './presentation/routes';
 
 //Infrastructure
@@ -119,10 +120,89 @@ const apiRouter = createApiRouter(
   authMiddleware
 );
 
-app.use('/api', apiRouter);
+app.get('/health/alive', (_req, res) => {
+  res.status(200).type('text/plain').send('OK');
+});
+
+app.get('/health/ready', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).type('text/plain').send('OK');
+  } catch {
+    res.status(500).type('text/plain').send('Database connection failed');
+  }
+});
+
+
+app.get('/', (_req, res) => {
+  res.type('text/html').send(`<!DOCTYPE html>
+<html>
+<head><title>TicketBooking API</title></head>
+<body>
+<h1>TicketBooking API</h1>
+<p>Train ticket booking system</p>
+
+<h2>Health</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/health/alive</td><td>Liveness probe</td></tr>
+<tr><td>GET</td><td>/health/ready</td><td>Readiness probe (checks DB)</td></tr>
+</table>
+
+<h2>Auth</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>POST</td><td>/api/auth/register</td><td>Register a new user</td></tr>
+<tr><td>POST</td><td>/api/auth/login</td><td>Login</td></tr>
+<tr><td>POST</td><td>/api/auth/refresh</td><td>Refresh access token</td></tr>
+</table>
+
+<h2>Stations</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/stations</td><td>List all stations</td></tr>
+<tr><td>POST</td><td>/api/stations</td><td>Create station</td></tr>
+<tr><td>PUT</td><td>/api/stations/:id</td><td>Update station</td></tr>
+<tr><td>DELETE</td><td>/api/stations/:id</td><td>Delete station</td></tr>
+</table>
+
+<h2>Routes</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/routes</td><td>List all routes</td></tr>
+<tr><td>POST</td><td>/api/routes</td><td>Create route</td></tr>
+<tr><td>PUT</td><td>/api/routes/:id</td><td>Update route</td></tr>
+<tr><td>DELETE</td><td>/api/routes/:id</td><td>Delete route</td></tr>
+</table>
+
+<h2>Trains</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/trains</td><td>List all trains</td></tr>
+<tr><td>GET</td><td>/api/trains/search</td><td>Search trains (origin, destination, date)</td></tr>
+<tr><td>POST</td><td>/api/trains</td><td>Create train</td></tr>
+<tr><td>PUT</td><td>/api/trains/:id</td><td>Update train</td></tr>
+<tr><td>DELETE</td><td>/api/trains/:id</td><td>Delete train</td></tr>
+<tr><td>POST</td><td>/api/trains/:id/carriages</td><td>Add carriage</td></tr>
+<tr><td>GET</td><td>/api/trains/:id/seats</td><td>View seat availability</td></tr>
+</table>
+
+<h2>Bookings</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/bookings</td><td>My bookings</td></tr>
+<tr><td>POST</td><td>/api/bookings</td><td>Book a seat</td></tr>
+<tr><td>PATCH</td><td>/api/bookings/:id/cancel</td><td>Cancel booking</td></tr>
+</table>
+
+</body>
+</html>`);
+});
+
+app.use('/api', contentNegotiation, apiRouter);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

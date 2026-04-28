@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Створюємо інстанс axios з базовим URL
 export const api = axios.create({
-  baseURL: '/api', // Vite proxy перенаправить це на http://localhost:3000/api
+  baseURL: '/api', // Vite proxy перенаправить це на http://localhost:8000/api
   headers: {
     'Content-Type': 'application/json',
   },

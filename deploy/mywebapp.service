@@ -1,0 +1,25 @@
+[Unit]
+Description=TicketBooking Web Application
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=app
+Group=app
+WorkingDirectory=/opt/mywebapp
+EnvironmentFile=/etc/mywebapp/env
+
+# Run database migration before starting the app
+ExecStartPre=/usr/bin/npx prisma migrate deploy
+
+# Start the application
+ExecStart=/usr/bin/node dist/server.js
+
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
