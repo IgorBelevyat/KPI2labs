@@ -9,6 +9,7 @@ import { PrismaStationRepository } from './infrastructure/repositories/prisma-st
 import { PrismaRouteRepository } from './infrastructure/repositories/prisma-route-repository';
 import { PrismaTrainRepository } from './infrastructure/repositories/prisma-train-repository';
 import { PrismaBookingRepository } from './infrastructure/repositories/prisma-booking-repository';
+import { PrismaBookingReadRepository } from './infrastructure/repositories/prisma-booking-read-repository';
 
 import { BcryptPasswordHasher } from './infrastructure/auth/bcrypt-password-hasher';
 import { JwtTokenService } from './infrastructure/auth/jwt-token-service';
@@ -34,6 +35,7 @@ import { CreateTrainUseCase } from './application/use-cases/trains/create-train'
 import { UpdateTrainUseCase } from './application/use-cases/trains/update-train';
 import { DeleteTrainUseCase } from './application/use-cases/trains/delete-train';
 import { SearchTrainsUseCase } from './application/use-cases/trains/search-trains';
+import { GetAllTrainsUseCase } from './application/use-cases/trains/get-all-trains';
 import { AddCarriageUseCase } from './application/use-cases/trains/add-carriage';
 import { GetAvailableSeatsUseCase } from './application/use-cases/trains/get-available-seats';
 import { CreateBookingUseCase } from './application/use-cases/bookings/create-booking';
@@ -56,6 +58,7 @@ const stationRepo = new PrismaStationRepository(prisma);
 const routeRepo = new PrismaRouteRepository(prisma);
 const trainRepo = new PrismaTrainRepository(prisma);
 const bookingRepo = new PrismaBookingRepository(prisma);
+const bookingReadRepo = new PrismaBookingReadRepository(prisma);
 
 const hasher = new BcryptPasswordHasher();
 const tokenService = new JwtTokenService(
@@ -89,18 +92,19 @@ const createTrainUC = new CreateTrainUseCase(trainFactory, trainRepo);
 const updateTrainUC = new UpdateTrainUseCase(trainRepo, routeRepo);
 const deleteTrainUC = new DeleteTrainUseCase(trainRepo);
 const searchTrainsUC = new SearchTrainsUseCase(trainRepo);
+const getAllTrainsUC = new GetAllTrainsUseCase(trainRepo);
 const addCarriageUC = new AddCarriageUseCase(trainRepo);
 const getSeatsUC = new GetAvailableSeatsUseCase(trainRepo, bookingRepo);
 
 const createBookingUC = new CreateBookingUseCase(bookingFactory, bookingRepo);
 const cancelBookingUC = new CancelBookingUseCase(bookingRepo);
-const getUserBookingsUC = new GetUserBookingsUseCase(bookingRepo);
+const getUserBookingsUC = new GetUserBookingsUseCase(bookingReadRepo);
 
 //Presentation Controllers
 const authController = new AuthController(registerUC, loginUC, refreshUC);
 const stationController = new StationController(createStationUC, updateStationUC, deleteStationUC, getStationsUC);
 const routeController = new RouteController(createRouteUC, updateRouteUC, deleteRouteUC, getRoutesUC);
-const trainController = new TrainController(createTrainUC, updateTrainUC, deleteTrainUC, searchTrainsUC, addCarriageUC, getSeatsUC);
+const trainController = new TrainController(createTrainUC, updateTrainUC, deleteTrainUC, searchTrainsUC, addCarriageUC, getSeatsUC, getAllTrainsUC);
 const bookingController = new BookingController(createBookingUC, cancelBookingUC, getUserBookingsUC);
 
 

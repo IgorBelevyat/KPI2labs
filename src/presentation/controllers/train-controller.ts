@@ -5,6 +5,7 @@ import { DeleteTrainUseCase } from '../../application/use-cases/trains/delete-tr
 import { SearchTrainsUseCase } from '../../application/use-cases/trains/search-trains';
 import { AddCarriageUseCase } from '../../application/use-cases/trains/add-carriage';
 import { GetAvailableSeatsUseCase } from '../../application/use-cases/trains/get-available-seats';
+import { GetAllTrainsUseCase } from '../../application/use-cases/trains/get-all-trains';
 
 export class TrainController {
   constructor(
@@ -13,8 +14,9 @@ export class TrainController {
     private readonly deleteUC: DeleteTrainUseCase,
     private readonly searchUC: SearchTrainsUseCase,
     private readonly addCarriageUC: AddCarriageUseCase,
-    private readonly getSeatsUC: GetAvailableSeatsUseCase
-  ) {}
+    private readonly getSeatsUC: GetAvailableSeatsUseCase,
+    private readonly getAllUC: GetAllTrainsUseCase
+  ) { }
 
   search = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -24,6 +26,13 @@ export class TrainController {
         destination as string,
         new Date(date as string)
       );
+      res.json(result);
+    } catch (err) { next(err); }
+  };
+
+  getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.getAllUC.execute();
       res.json(result);
     } catch (err) { next(err); }
   };
@@ -59,7 +68,8 @@ export class TrainController {
   getAvailableSeats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { date } = req.query;
-      const result = await this.getSeatsUC.execute((req.params.id as string), new Date(date as string));
+      const travelDate = date ? new Date(date as string) : undefined;
+      const result = await this.getSeatsUC.execute((req.params.id as string), travelDate);
       res.json(result);
     } catch (err) { next(err); }
   };

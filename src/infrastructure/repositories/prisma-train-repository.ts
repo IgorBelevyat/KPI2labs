@@ -74,20 +74,23 @@ export class PrismaTrainRepository implements TrainRepository {
   async findByRouteAndDate(
     originStationId: string,
     destinationStationId: string,
-    _date: Date
+    date: Date
   ): Promise<Train[]> {
+    const dayStart = new Date(date);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(date);
+    dayEnd.setHours(23, 59, 59, 999);
+
     const rows = await this.prisma.train.findMany({
       where: {
-        route: {
-          stops: {
-            some: { stationId: originStationId },
-          },
-          AND: {
-            stops: {
-              some: { stationId: destinationStationId },
-            },
-          },
+        departureTime: {
+          gte: dayStart,
+          lte: dayEnd,
         },
+        AND: [
+          { route: { stops: { some: { stationId: originStationId } } } },
+          { route: { stops: { some: { stationId: destinationStationId } } } },
+        ],
       },
       include: INCLUDE_CARRIAGES,
     });

@@ -4,14 +4,26 @@ import { BookingRepository } from '../../domain/repositories/booking-repository'
 import { BookingMapper } from '../mappers/booking-mapper';
 
 export class PrismaBookingRepository implements BookingRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClient) { }
 
   async save(booking: Booking): Promise<void> {
     const data = BookingMapper.toPersistence(booking);
-    await this.prisma.booking.upsert({
-      where: { id: data.id },
-      update: { status: data.status },
-      create: data,
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.booking.deleteMany({
+        where: {
+          seatId: data.seatId,
+          trainId: data.trainId,
+          travelDate: data.travelDate,
+          status: 'cancelled',
+        },
+      });
+
+      await tx.booking.upsert({
+        where: { id: data.id },
+        update: { status: data.status },
+        create: data,
+      });
     });
   }
 
@@ -25,7 +37,7 @@ export class PrismaBookingRepository implements BookingRepository {
       where: { userId },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map(BookingMapper.toDomain);
+    return rows.map((r) => BookingMapper.toDomain(r));
   }
 
   async isSeatBooked(seatId: string, trainId: string, travelDate: Date): Promise<boolean> {
@@ -44,6 +56,6 @@ export class PrismaBookingRepository implements BookingRepository {
     const rows = await this.prisma.booking.findMany({
       where: { trainId, status: 'created' },
     });
-    return rows.map(BookingMapper.toDomain);
+    return rows.map((r) => BookingMapper.toDomain(r));
   }
 }

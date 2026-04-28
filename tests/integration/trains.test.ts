@@ -100,8 +100,9 @@ describe('Trains Integration', () => {
         .query({ date: '2027-06-15' });
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(4);
-      expect(res.body[0].isBooked).toBe(false);
+      expect(res.body).toHaveLength(1);
+      expect(res.body[0].seats).toHaveLength(4);
+      expect(res.body[0].seats[0].isBooked).toBe(false);
     });
   });
 

@@ -12,4 +12,12 @@ export interface BookingResultDto {
   travelDate: string;
   status: string;
   createdAt: string;
+  train?: {
+    number: string;
+    departureTime: string;
+    arrivalTime: string;
+  };
+  seat?: {
+    number: number;
+  };
 }

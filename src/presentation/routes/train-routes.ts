@@ -6,6 +6,7 @@ import { adminMiddleware } from '../middleware/admin-middleware';
 export function createTrainRoutes(controller: TrainController, authMiddleware: RequestHandler): Router {
   const router = Router();
 
+  router.get('/', controller.getAll);
   router.get('/search', controller.search);
   router.get('/:id/seats', controller.getAvailableSeats);
   router.post('/', authMiddleware, adminMiddleware, validateCreateTrain, controller.create);
