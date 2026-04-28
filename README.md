@@ -3,7 +3,8 @@
 Система бронювання квитків на потяги, побудована на основі Layered Architecture (DDD) з Rich Domain Model.
 
 ## Технології
-
+| Technologie  | Implementation |
+|--------------|---------------- |
 | Backend | Node.js, Express, TypeScript |
 | Frontend | React, Vite, TypeScript |
 | БД | PostgreSQL |
