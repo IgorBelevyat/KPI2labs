@@ -79,7 +79,9 @@ chown root:$APP_USER "$CONFIG_DIR/env"
 
 echo "=== [5/8] Installing application ==="
 mkdir -p "$APP_DIR"
-cp -r "$REPO_DIR"/{src,prisma,package.json,package-lock.json,tsconfig.json} "$APP_DIR/"
+if [ "$REPO_DIR" != "$APP_DIR" ]; then
+    cp -r "$REPO_DIR"/{src,prisma,package.json,package-lock.json,tsconfig.json} "$APP_DIR/"
+fi
 cd "$APP_DIR"
 
 npm ci
