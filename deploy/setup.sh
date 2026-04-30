@@ -35,7 +35,7 @@ if ! id "$APP_USER" &>/dev/null; then
 fi
 
 if ! id "operator" &>/dev/null; then
-    useradd -m -s /bin/bash operator
+    useradd -m -s /bin/bash -N operator || useradd -m -s /bin/bash -g operator operator
     echo "operator:12345678" | chpasswd
     chage -d 0 operator
 fi
@@ -82,16 +82,11 @@ mkdir -p "$APP_DIR"
 cp -r "$REPO_DIR"/{src,prisma,package.json,package-lock.json,tsconfig.json} "$APP_DIR/"
 cd "$APP_DIR"
 
-# Install ALL dependencies (including devDependencies like typescript) to build
 npm ci
 npx prisma generate
 npm run build
-
-# Remove devDependencies after build to save space
 npm prune --omit=dev
 
-# Run database migrations before changing ownership
-# (needs DATABASE_URL from env file)
 export $(cat "$CONFIG_DIR/env" | xargs)
 npx prisma migrate deploy
 
@@ -104,17 +99,14 @@ systemctl enable mywebapp
 systemctl start mywebapp
 
 echo "=== [7/8] Configuring nginx ==="
-# Ensure directories exist (some minimal installs don't have them)
 mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
 
-# Remove any leftover directory/file to avoid "cp into directory" issue
 rm -rf /etc/nginx/sites-available/mywebapp
 rm -rf /etc/nginx/sites-enabled/mywebapp
 
 cp "$REPO_DIR/deploy/nginx.conf" /etc/nginx/sites-available/mywebapp
 ln -sf /etc/nginx/sites-available/mywebapp /etc/nginx/sites-enabled/mywebapp
 
-# Remove default config that intercepts traffic on port 80
 rm -f /etc/nginx/sites-enabled/default
 
 nginx -t && systemctl reload nginx
@@ -123,7 +115,6 @@ echo "=== [8/8] Creating gradebook ==="
 echo "3" > /home/student/gradebook
 chown student:student /home/student/gradebook
 
-# Lock the default VM user (the one created during OS install)
 DEFAULT_USER=$(awk -F: '$3 >= 1000 && $1 != "student" && $1 != "teacher" && $1 != "operator" {print $1}' /etc/passwd | head -1)
 if [ -n "$DEFAULT_USER" ] && [ "$DEFAULT_USER" != "root" ]; then
     usermod -L "$DEFAULT_USER"
