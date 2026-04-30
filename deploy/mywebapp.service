@@ -10,6 +10,9 @@ Group=app
 WorkingDirectory=/opt/mywebapp
 EnvironmentFile=/etc/mywebapp/env
 
+# Ensure Node.js binaries are in PATH for npx/prisma
+Environment=PATH=/usr/bin:/usr/local/bin:/opt/mywebapp/node_modules/.bin
+
 # Run database migration before starting the app
 ExecStartPre=/usr/bin/npx prisma migrate deploy
 
