@@ -9,6 +9,9 @@ import { PrismaRouteRepository } from '../../src/infrastructure/repositories/pri
 import { PrismaTrainRepository } from '../../src/infrastructure/repositories/prisma-train-repository';
 import { PrismaBookingRepository } from '../../src/infrastructure/repositories/prisma-booking-repository';
 import { PrismaBookingReadRepository } from '../../src/infrastructure/repositories/prisma-booking-read-repository';
+import { PrismaStationReadRepository } from '../../src/infrastructure/repositories/prisma-station-read-repository';
+import { PrismaRouteReadRepository } from '../../src/infrastructure/repositories/prisma-route-read-repository';
+import { PrismaTrainReadRepository } from '../../src/infrastructure/repositories/prisma-train-read-repository';
 import { BcryptPasswordHasher } from '../../src/infrastructure/auth/bcrypt-password-hasher';
 import { JwtTokenService } from '../../src/infrastructure/auth/jwt-token-service';
 
@@ -18,27 +21,30 @@ import { RouteFactory } from '../../src/domain/factories/route-factory';
 import { TrainFactory } from '../../src/domain/factories/train-factory';
 import { BookingFactory } from '../../src/domain/factories/booking-factory';
 
-import { RegisterUserUseCase } from '../../src/application/use-cases/auth/register-user';
-import { LoginUserUseCase } from '../../src/application/use-cases/auth/login-user';
-import { RefreshTokenUseCase } from '../../src/application/use-cases/auth/refresh-token';
-import { CreateStationUseCase } from '../../src/application/use-cases/stations/create-station';
-import { UpdateStationUseCase } from '../../src/application/use-cases/stations/update-station';
-import { DeleteStationUseCase } from '../../src/application/use-cases/stations/delete-station';
-import { GetStationsUseCase } from '../../src/application/use-cases/stations/get-stations';
-import { CreateRouteUseCase } from '../../src/application/use-cases/routes/create-route';
-import { UpdateRouteUseCase } from '../../src/application/use-cases/routes/update-route';
-import { DeleteRouteUseCase } from '../../src/application/use-cases/routes/delete-route';
-import { GetRoutesUseCase } from '../../src/application/use-cases/routes/get-routes';
-import { CreateTrainUseCase } from '../../src/application/use-cases/trains/create-train';
-import { UpdateTrainUseCase } from '../../src/application/use-cases/trains/update-train';
-import { DeleteTrainUseCase } from '../../src/application/use-cases/trains/delete-train';
-import { SearchTrainsUseCase } from '../../src/application/use-cases/trains/search-trains';
-import { GetAllTrainsUseCase } from '../../src/application/use-cases/trains/get-all-trains';
-import { AddCarriageUseCase } from '../../src/application/use-cases/trains/add-carriage';
-import { GetAvailableSeatsUseCase } from '../../src/application/use-cases/trains/get-available-seats';
-import { CreateBookingUseCase } from '../../src/application/use-cases/bookings/create-booking';
-import { CancelBookingUseCase } from '../../src/application/use-cases/bookings/cancel-booking';
-import { GetUserBookingsUseCase } from '../../src/application/use-cases/bookings/get-user-bookings';
+// Command Handlers
+import { RegisterUserCommandHandler } from '../../src/application/commands/auth/register-user.handler';
+import { LoginUserCommandHandler } from '../../src/application/commands/auth/login-user.handler';
+import { RefreshTokenCommandHandler } from '../../src/application/commands/auth/refresh-token.handler';
+import { CreateStationCommandHandler } from '../../src/application/commands/stations/create-station.handler';
+import { UpdateStationCommandHandler } from '../../src/application/commands/stations/update-station.handler';
+import { DeleteStationCommandHandler } from '../../src/application/commands/stations/delete-station.handler';
+import { CreateRouteCommandHandler } from '../../src/application/commands/routes/create-route.handler';
+import { UpdateRouteCommandHandler } from '../../src/application/commands/routes/update-route.handler';
+import { DeleteRouteCommandHandler } from '../../src/application/commands/routes/delete-route.handler';
+import { CreateTrainCommandHandler } from '../../src/application/commands/trains/create-train.handler';
+import { UpdateTrainCommandHandler } from '../../src/application/commands/trains/update-train.handler';
+import { DeleteTrainCommandHandler } from '../../src/application/commands/trains/delete-train.handler';
+import { AddCarriageCommandHandler } from '../../src/application/commands/trains/add-carriage.handler';
+import { CreateBookingCommandHandler } from '../../src/application/commands/bookings/create-booking.handler';
+import { CancelBookingCommandHandler } from '../../src/application/commands/bookings/cancel-booking.handler';
+
+// Query Handlers
+import { GetStationsQueryHandler } from '../../src/application/queries/stations/get-stations.handler';
+import { GetRoutesQueryHandler } from '../../src/application/queries/routes/get-routes.handler';
+import { GetAllTrainsQueryHandler } from '../../src/application/queries/trains/get-all-trains.handler';
+import { SearchTrainsQueryHandler } from '../../src/application/queries/trains/search-trains.handler';
+import { GetAvailableSeatsQueryHandler } from '../../src/application/queries/trains/get-available-seats.handler';
+import { GetUserBookingsQueryHandler } from '../../src/application/queries/bookings/get-user-bookings.handler';
 
 import { AuthController } from '../../src/presentation/controllers/auth-controller';
 import { StationController } from '../../src/presentation/controllers/station-controller';
@@ -59,11 +65,17 @@ export function setupTestApp() {
     prisma = new PrismaClient({ adapter });
     await prisma.$connect();
 
+    // Infrastructure — write repos
     const userRepo = new PrismaUserRepository(prisma);
     const stationRepo = new PrismaStationRepository(prisma);
     const routeRepo = new PrismaRouteRepository(prisma);
     const trainRepo = new PrismaTrainRepository(prisma);
     const bookingRepo = new PrismaBookingRepository(prisma);
+
+    // Infrastructure — read repos
+    const stationReadRepo = new PrismaStationReadRepository(prisma);
+    const routeReadRepo = new PrismaRouteReadRepository(prisma);
+    const trainReadRepo = new PrismaTrainReadRepository(prisma);
     const bookingReadRepo = new PrismaBookingReadRepository(prisma);
 
     const hasher = new BcryptPasswordHasher();
@@ -75,33 +87,37 @@ export function setupTestApp() {
     const trainFactory = new TrainFactory(trainRepo, routeRepo);
     const bookingFactory = new BookingFactory(bookingRepo, trainRepo);
 
-    const registerUC = new RegisterUserUseCase(userFactory, userRepo, tokenService);
-    const loginUC = new LoginUserUseCase(userRepo, hasher, tokenService);
-    const refreshUC = new RefreshTokenUseCase(userRepo, tokenService);
-    const createStationUC = new CreateStationUseCase(stationFactory, stationRepo);
-    const updateStationUC = new UpdateStationUseCase(stationRepo);
-    const deleteStationUC = new DeleteStationUseCase(stationRepo);
-    const getStationsUC = new GetStationsUseCase(stationRepo);
-    const createRouteUC = new CreateRouteUseCase(routeFactory, routeRepo);
-    const updateRouteUC = new UpdateRouteUseCase(routeRepo, stationRepo);
-    const deleteRouteUC = new DeleteRouteUseCase(routeRepo);
-    const getRoutesUC = new GetRoutesUseCase(routeRepo);
-    const createTrainUC = new CreateTrainUseCase(trainFactory, trainRepo);
-    const updateTrainUC = new UpdateTrainUseCase(trainRepo, routeRepo);
-    const deleteTrainUC = new DeleteTrainUseCase(trainRepo);
-    const searchTrainsUC = new SearchTrainsUseCase(trainRepo);
-    const getAllTrainsUC = new GetAllTrainsUseCase(trainRepo);
-    const addCarriageUC = new AddCarriageUseCase(trainRepo);
-    const getSeatsUC = new GetAvailableSeatsUseCase(trainRepo, bookingRepo);
-    const createBookingUC = new CreateBookingUseCase(bookingFactory, bookingRepo);
-    const cancelBookingUC = new CancelBookingUseCase(bookingRepo);
-    const getUserBookingsUC = new GetUserBookingsUseCase(bookingReadRepo);
+    // Command Handlers
+    const registerHandler = new RegisterUserCommandHandler(userFactory, userRepo, tokenService);
+    const loginHandler = new LoginUserCommandHandler(userRepo, hasher, tokenService);
+    const refreshHandler = new RefreshTokenCommandHandler(userRepo, tokenService);
+    const createStationHandler = new CreateStationCommandHandler(stationFactory, stationRepo);
+    const updateStationHandler = new UpdateStationCommandHandler(stationRepo);
+    const deleteStationHandler = new DeleteStationCommandHandler(stationRepo);
+    const createRouteHandler = new CreateRouteCommandHandler(routeFactory, routeRepo);
+    const updateRouteHandler = new UpdateRouteCommandHandler(routeRepo, stationRepo);
+    const deleteRouteHandler = new DeleteRouteCommandHandler(routeRepo);
+    const createTrainHandler = new CreateTrainCommandHandler(trainFactory, trainRepo);
+    const updateTrainHandler = new UpdateTrainCommandHandler(trainRepo, routeRepo);
+    const deleteTrainHandler = new DeleteTrainCommandHandler(trainRepo);
+    const addCarriageHandler = new AddCarriageCommandHandler(trainRepo);
+    const createBookingHandler = new CreateBookingCommandHandler(bookingFactory, bookingRepo);
+    const cancelBookingHandler = new CancelBookingCommandHandler(bookingRepo);
 
-    const authController = new AuthController(registerUC, loginUC, refreshUC);
-    const stationController = new StationController(createStationUC, updateStationUC, deleteStationUC, getStationsUC);
-    const routeController = new RouteController(createRouteUC, updateRouteUC, deleteRouteUC, getRoutesUC);
-    const trainController = new TrainController(createTrainUC, updateTrainUC, deleteTrainUC, searchTrainsUC, addCarriageUC, getSeatsUC, getAllTrainsUC);
-    const bookingController = new BookingController(createBookingUC, cancelBookingUC, getUserBookingsUC);
+    // Query Handlers
+    const getStationsHandler = new GetStationsQueryHandler(stationReadRepo);
+    const getRoutesHandler = new GetRoutesQueryHandler(routeReadRepo);
+    const getAllTrainsHandler = new GetAllTrainsQueryHandler(trainReadRepo);
+    const searchTrainsHandler = new SearchTrainsQueryHandler(trainReadRepo);
+    const getSeatsHandler = new GetAvailableSeatsQueryHandler(trainReadRepo);
+    const getBookingsHandler = new GetUserBookingsQueryHandler(bookingReadRepo);
+
+    // Controllers
+    const authController = new AuthController(registerHandler, loginHandler, refreshHandler);
+    const stationController = new StationController(createStationHandler, updateStationHandler, deleteStationHandler, getStationsHandler);
+    const routeController = new RouteController(createRouteHandler, updateRouteHandler, deleteRouteHandler, getRoutesHandler);
+    const trainController = new TrainController(createTrainHandler, updateTrainHandler, deleteTrainHandler, addCarriageHandler, getAllTrainsHandler, searchTrainsHandler, getSeatsHandler);
+    const bookingController = new BookingController(createBookingHandler, cancelBookingHandler, getBookingsHandler);
 
     const authMiddleware = createAuthMiddleware(tokenService);
     const apiRouter = createApiRouter(
@@ -121,17 +137,16 @@ export function setupTestApp() {
 }
 
 export async function cleanDatabase() {
-  await prisma.$transaction([
-    prisma.booking.deleteMany(),
-    prisma.seat.deleteMany(),
-    prisma.carriage.deleteMany(),
-    prisma.train.deleteMany(),
-    prisma.routeStop.deleteMany(),
-    prisma.route.deleteMany(),
-    prisma.station.deleteMany(),
-    prisma.refreshToken.deleteMany(),
-    prisma.user.deleteMany(),
-  ]);
+  // Sequential deletes to respect FK constraints
+  await prisma.booking.deleteMany();
+  await prisma.seat.deleteMany();
+  await prisma.carriage.deleteMany();
+  await prisma.train.deleteMany();
+  await prisma.routeStop.deleteMany();
+  await prisma.route.deleteMany();
+  await prisma.station.deleteMany();
+  await prisma.refreshToken.deleteMany();
+  await prisma.user.deleteMany();
 }
 
 export function getAdminToken(): string {

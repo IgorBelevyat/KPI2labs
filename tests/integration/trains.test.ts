@@ -34,7 +34,7 @@ describe('Trains Integration', () => {
   });
 
   describe('POST /api/trains', () => {
-    it('should create a train', async () => {
+    it('should create a train and return id', async () => {
       const res = await request(app)
         .post('/api/trains')
         .set('Authorization', `Bearer ${adminToken}`)
@@ -46,8 +46,7 @@ describe('Trains Integration', () => {
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.number).toBe('K42');
-      expect(res.body.routeId).toBe(routeId);
+      expect(res.body.id).toBeDefined();
     });
 
     it('should return 409 on duplicate train number', async () => {
@@ -66,7 +65,7 @@ describe('Trains Integration', () => {
   });
 
   describe('POST /api/trains/:id/carriages', () => {
-    it('should add a carriage with seats to a train', async () => {
+    it('should add a carriage and return its id', async () => {
       const train = await request(app)
         .post('/api/trains')
         .set('Authorization', `Bearer ${adminToken}`)
@@ -78,13 +77,17 @@ describe('Trains Integration', () => {
         .send({ number: 1, type: 'coupe', seatCount: 36 });
 
       expect(res.status).toBe(201);
-      expect(res.body.carriages).toHaveLength(1);
-      expect(res.body.carriages[0].seats).toHaveLength(36);
+      expect(res.body.id).toBeDefined();
+
+      const all = await request(app).get('/api/trains');
+      const t = all.body.find((t: any) => t.id === train.body.id);
+      expect(t.carriages).toHaveLength(1);
+      expect(t.carriages[0].seats).toHaveLength(36);
     });
   });
 
   describe('GET /api/trains/:id/seats', () => {
-    it('should return seat availability', async () => {
+    it('should return seat availability via query handler', async () => {
       const train = await request(app)
         .post('/api/trains')
         .set('Authorization', `Bearer ${adminToken}`)

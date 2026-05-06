@@ -26,7 +26,7 @@ describe('Routes Integration', () => {
   });
 
   describe('POST /api/routes', () => {
-    it('should create a route with 2 stops', async () => {
+    it('should create a route and return id', async () => {
       const res = await request(app)
         .post('/api/routes')
         .set('Authorization', `Bearer ${adminToken}`)
@@ -38,7 +38,7 @@ describe('Routes Integration', () => {
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.stops).toHaveLength(2);
+      expect(res.body.id).toBeDefined();
     });
 
     it('should return 400 with less than 2 stops', async () => {
@@ -54,7 +54,7 @@ describe('Routes Integration', () => {
   });
 
   describe('GET /api/routes', () => {
-    it('should return all routes', async () => {
+    it('should return all routes via query handler with station names', async () => {
       await request(app)
         .post('/api/routes')
         .set('Authorization', `Bearer ${adminToken}`)
@@ -68,6 +68,8 @@ describe('Routes Integration', () => {
       const res = await request(app).get('/api/routes');
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(1);
+      expect(res.body[0].stops).toHaveLength(2);
+      expect(res.body[0].stops[0].stationName).toBeDefined();
     });
   });
 

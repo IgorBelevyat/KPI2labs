@@ -12,15 +12,13 @@ describe('Stations Integration', () => {
   });
 
   describe('POST /api/stations', () => {
-    it('should create a station as admin', async () => {
+    it('should create a station as admin and return id', async () => {
       const res = await request(app)
         .post('/api/stations')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'Kyiv-Pasazhyrskyi', city: 'Kyiv' });
 
       expect(res.status).toBe(201);
-      expect(res.body.name).toBe('Kyiv-Pasazhyrskyi');
-      expect(res.body.city).toBe('Kyiv');
       expect(res.body.id).toBeDefined();
     });
 
@@ -57,7 +55,7 @@ describe('Stations Integration', () => {
   });
 
   describe('GET /api/stations', () => {
-    it('should return all stations (no auth required)', async () => {
+    it('should return all stations via query handler (no auth required)', async () => {
       await request(app)
         .post('/api/stations')
         .set('Authorization', `Bearer ${adminToken}`)
@@ -72,7 +70,7 @@ describe('Stations Integration', () => {
   });
 
   describe('PUT /api/stations/:id', () => {
-    it('should update a station', async () => {
+    it('should update a station (command returns 204)', async () => {
       const created = await request(app)
         .post('/api/stations')
         .set('Authorization', `Bearer ${adminToken}`)
@@ -83,8 +81,9 @@ describe('Stations Integration', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'Kyiv-Pasazhyrskyi', city: 'Kyiv' });
 
-      expect(res.status).toBe(200);
-      expect(res.body.name).toBe('Kyiv-Pasazhyrskyi');
+      expect(res.status).toBe(204);
+      const all = await request(app).get('/api/stations');
+      expect(all.body[0].name).toBe('Kyiv-Pasazhyrskyi');
     });
   });
 

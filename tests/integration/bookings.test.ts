@@ -36,23 +36,31 @@ describe('Bookings Integration', () => {
       .send({ number: 'K42', routeId: route.body.id, departureTime: '2027-06-01T08:00:00Z', arrivalTime: '2027-06-01T14:00:00Z' });
     trainId = train.body.id;
 
-    const withCarriage = await request(app)
+    const carriageRes = await request(app)
       .post(`/api/trains/${trainId}/carriages`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ number: 1, type: 'coupe', seatCount: 4 });
-    seatId = withCarriage.body.carriages[0].seats[0].id;
+    const seatsRes = await request(app)
+      .get(`/api/trains/${trainId}/seats`);
+    seatId = seatsRes.body[0].seats[0].id;
   });
 
   describe('POST /api/bookings', () => {
-    it('should create a booking for authenticated user', async () => {
+    it('should create a booking and return id', async () => {
       const res = await request(app)
         .post('/api/bookings')
         .set('Authorization', `Bearer ${userToken}`)
         .send({ trainId, seatId, travelDate: '2027-06-15' });
 
       expect(res.status).toBe(201);
-      expect(res.body.userId).toBe(userId);
-      expect(res.body.status).toBe('created');
+      expect(res.body.id).toBeDefined();
+
+      const my = await request(app)
+        .get('/api/bookings/my')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(my.body).toHaveLength(1);
+      expect(my.body[0].userId).toBe(userId);
+      expect(my.body[0].status).toBe('created');
     });
 
     it('should return 401 without auth', async () => {
@@ -79,7 +87,7 @@ describe('Bookings Integration', () => {
   });
 
   describe('PATCH /api/bookings/:id/cancel', () => {
-    it('should cancel own booking', async () => {
+    it('should cancel own booking (command returns 204)', async () => {
       const booking = await request(app)
         .post('/api/bookings')
         .set('Authorization', `Bearer ${userToken}`)
@@ -89,8 +97,12 @@ describe('Bookings Integration', () => {
         .patch(`/api/bookings/${booking.body.id}/cancel`)
         .set('Authorization', `Bearer ${userToken}`);
 
-      expect(res.status).toBe(200);
-      expect(res.body.status).toBe('cancelled');
+      expect(res.status).toBe(204);
+
+      const my = await request(app)
+        .get('/api/bookings/my')
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(my.body[0].status).toBe('cancelled');
     });
 
     it('should return 403 if another user tries to cancel', async () => {
@@ -113,7 +125,7 @@ describe('Bookings Integration', () => {
   });
 
   describe('GET /api/bookings/my', () => {
-    it('should return bookings for current user', async () => {
+    it('should return bookings for current user via query handler', async () => {
       await request(app)
         .post('/api/bookings')
         .set('Authorization', `Bearer ${userToken}`)
@@ -126,6 +138,8 @@ describe('Bookings Integration', () => {
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(1);
       expect(res.body[0].trainId).toBe(trainId);
+      expect(res.body[0].train).toBeDefined();
+      expect(res.body[0].train.number).toBe('K42');
     });
   });
 });
