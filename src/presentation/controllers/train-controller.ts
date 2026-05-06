@@ -1,75 +1,75 @@
 import { Request, Response, NextFunction } from 'express';
-import { CreateTrainUseCase } from '../../application/use-cases/trains/create-train';
-import { UpdateTrainUseCase } from '../../application/use-cases/trains/update-train';
-import { DeleteTrainUseCase } from '../../application/use-cases/trains/delete-train';
-import { SearchTrainsUseCase } from '../../application/use-cases/trains/search-trains';
-import { AddCarriageUseCase } from '../../application/use-cases/trains/add-carriage';
-import { GetAvailableSeatsUseCase } from '../../application/use-cases/trains/get-available-seats';
-import { GetAllTrainsUseCase } from '../../application/use-cases/trains/get-all-trains';
+import { CreateTrainCommandHandler } from '../../application/commands/trains/create-train.handler';
+import { UpdateTrainCommandHandler } from '../../application/commands/trains/update-train.handler';
+import { DeleteTrainCommandHandler } from '../../application/commands/trains/delete-train.handler';
+import { AddCarriageCommandHandler } from '../../application/commands/trains/add-carriage.handler';
+import { GetAllTrainsQueryHandler } from '../../application/queries/trains/get-all-trains.handler';
+import { SearchTrainsQueryHandler } from '../../application/queries/trains/search-trains.handler';
+import { GetAvailableSeatsQueryHandler } from '../../application/queries/trains/get-available-seats.handler';
 
 export class TrainController {
   constructor(
-    private readonly createUC: CreateTrainUseCase,
-    private readonly updateUC: UpdateTrainUseCase,
-    private readonly deleteUC: DeleteTrainUseCase,
-    private readonly searchUC: SearchTrainsUseCase,
-    private readonly addCarriageUC: AddCarriageUseCase,
-    private readonly getSeatsUC: GetAvailableSeatsUseCase,
-    private readonly getAllUC: GetAllTrainsUseCase
-  ) { }
+    private readonly createHandler: CreateTrainCommandHandler,
+    private readonly updateHandler: UpdateTrainCommandHandler,
+    private readonly deleteHandler: DeleteTrainCommandHandler,
+    private readonly addCarriageHandler: AddCarriageCommandHandler,
+    private readonly getAllHandler: GetAllTrainsQueryHandler,
+    private readonly searchHandler: SearchTrainsQueryHandler,
+    private readonly getSeatsHandler: GetAvailableSeatsQueryHandler
+  ) {}
 
-  search = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getAll = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { origin, destination, date } = req.query;
-      const result = await this.searchUC.execute(
-        origin as string,
-        destination as string,
-        new Date(date as string)
-      );
+      const result = await this.getAllHandler.handle();
       res.json(result);
     } catch (err) { next(err); }
   };
 
-  getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  search = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await this.getAllUC.execute();
+      const result = await this.searchHandler.handle({
+        originStationId: req.query.origin as string,
+        destinationStationId: req.query.destination as string,
+        date: req.query.date as string,
+      });
       res.json(result);
     } catch (err) { next(err); }
   };
 
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await this.createUC.execute(req.body);
+      const result = await this.createHandler.handle(req.body);
       res.status(201).json(result);
     } catch (err) { next(err); }
   };
 
   update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await this.updateUC.execute((req.params.id as string), req.body);
-      res.json(result);
+      await this.updateHandler.handle({ id: req.params.id as string, ...req.body });
+      res.status(204).send();
     } catch (err) { next(err); }
   };
 
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      await this.deleteUC.execute((req.params.id as string));
+      await this.deleteHandler.handle({ id: req.params.id as string });
       res.status(204).send();
     } catch (err) { next(err); }
   };
 
   addCarriage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await this.addCarriageUC.execute((req.params.id as string), req.body);
+      const result = await this.addCarriageHandler.handle({ trainId: req.params.id as string, ...req.body });
       res.status(201).json(result);
     } catch (err) { next(err); }
   };
 
   getAvailableSeats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { date } = req.query;
-      const travelDate = date ? new Date(date as string) : undefined;
-      const result = await this.getSeatsUC.execute((req.params.id as string), travelDate);
+      const result = await this.getSeatsHandler.handle({
+        trainId: req.params.id as string,
+        travelDate: req.query.date as string | undefined,
+      });
       res.json(result);
     } catch (err) { next(err); }
   };

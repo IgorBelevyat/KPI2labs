@@ -1,11 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import { BookingReadRepository } from '../../application/interfaces/booking-read-repository';
-import { BookingResultDto } from '../../application/dto/booking-dto';
+import { BookingReadModel } from '../../application/queries/bookings/booking.read-model';
 
 export class PrismaBookingReadRepository implements BookingReadRepository {
   constructor(private readonly prisma: PrismaClient) { }
 
-  async findUserBookingsWithDetails(userId: string): Promise<BookingResultDto[]> {
+  async findUserBookingsWithDetails(userId: string): Promise<BookingReadModel[]> {
     const rows = await this.prisma.booking.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },

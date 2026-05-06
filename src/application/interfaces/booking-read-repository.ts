@@ -1,5 +1,5 @@
-import { BookingResultDto } from '../dto/booking-dto';
+import { BookingReadModel } from '../queries/bookings/booking.read-model';
 
 export interface BookingReadRepository {
-  findUserBookingsWithDetails(userId: string): Promise<BookingResultDto[]>;
+  findUserBookingsWithDetails(userId: string): Promise<BookingReadModel[]>;
 }
