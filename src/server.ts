@@ -21,6 +21,14 @@ import { PrismaBookingReadRepository } from './infrastructure/repositories/prism
 import { BcryptPasswordHasher } from './infrastructure/auth/bcrypt-password-hasher';
 import { JwtTokenService } from './infrastructure/auth/jwt-token-service';
 
+// Infrastructure — Notifications
+import { ConsoleNotificationService } from './infrastructure/notifications/console-notification-service';
+
+// Infrastructure — Messaging (Kafka)
+import { Kafka } from 'kafkajs';
+import { KafkaEventBus } from './infrastructure/messaging/kafka-event-bus';
+import { NotificationSubscriber } from './infrastructure/messaging/notification-subscriber';
+
 // Domain — Factories
 import { UserFactory } from './domain/factories/user-factory';
 import { StationFactory } from './domain/factories/station-factory';
@@ -90,7 +98,28 @@ const routeFactory = new RouteFactory(stationRepo);
 const trainFactory = new TrainFactory(trainRepo, routeRepo);
 const bookingFactory = new BookingFactory(bookingRepo, trainRepo);
 
-// Command Handlers
+// Notification Mode (sync vs async)
+const NOTIFICATION_MODE = process.env.NOTIFICATION_MODE || 'sync';
+const notificationService = new ConsoleNotificationService();
+
+let kafkaEventBus: KafkaEventBus | undefined;
+
+if (NOTIFICATION_MODE === 'async') {
+  const kafka = new Kafka({
+    clientId: 'ticketbooking',
+    brokers: [process.env.KAFKA_BROKER || 'localhost:9092'],
+  });
+  kafkaEventBus = new KafkaEventBus(kafka);
+
+  // Subscriber — reacts to events and delegates to NotificationService
+  const subscriber = new NotificationSubscriber(notificationService);
+  kafkaEventBus.subscribe('BookingCreated', (e) => subscriber.onBookingCreated(e));
+  kafkaEventBus.subscribe('BookingCancelled', (e) => subscriber.onBookingCancelled(e));
+}
+
+console.log(`[Config] NOTIFICATION_MODE = ${NOTIFICATION_MODE}`);
+
+// ── Command Handlers ────────────────────────────────────────────────────
 const registerHandler = new RegisterUserCommandHandler(userFactory, userRepo, tokenService);
 const loginHandler = new LoginUserCommandHandler(userRepo, hasher, tokenService);
 const refreshHandler = new RefreshTokenCommandHandler(userRepo, tokenService);
@@ -108,8 +137,18 @@ const updateTrainHandler = new UpdateTrainCommandHandler(trainRepo, routeRepo);
 const deleteTrainHandler = new DeleteTrainCommandHandler(trainRepo);
 const addCarriageHandler = new AddCarriageCommandHandler(trainRepo);
 
-const createBookingHandler = new CreateBookingCommandHandler(bookingFactory, bookingRepo);
-const cancelBookingHandler = new CancelBookingCommandHandler(bookingRepo);
+// Booking handlers — gets notificationService (sync) or eventBus (async)
+const createBookingHandler = new CreateBookingCommandHandler(
+  bookingFactory,
+  bookingRepo,
+  NOTIFICATION_MODE === 'sync' ? notificationService : undefined,
+  NOTIFICATION_MODE === 'async' ? kafkaEventBus : undefined
+);
+const cancelBookingHandler = new CancelBookingCommandHandler(
+  bookingRepo,
+  NOTIFICATION_MODE === 'sync' ? notificationService : undefined,
+  NOTIFICATION_MODE === 'async' ? kafkaEventBus : undefined
+);
 
 // Query Handlers
 const getStationsHandler = new GetStationsQueryHandler(stationReadRepo);
@@ -221,8 +260,21 @@ app.use('/api', contentNegotiation, apiRouter);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+
+async function start() {
+  // Підключити Kafka якщо async-режим
+  if (kafkaEventBus) {
+    await kafkaEventBus.connect();
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+start().catch((err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });
 
 export default app;
