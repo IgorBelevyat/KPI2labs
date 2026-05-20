@@ -1,5 +1,5 @@
 import { User as PrismaUser } from '@prisma/client';
-import { User } from '../../domain/models/user';
+import { User } from '../../modules/booking/domain/models/user';
 import { Email } from '../../domain/value-objects/email';
 import { Password } from '../../domain/value-objects/password';
 

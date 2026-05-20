@@ -1,5 +1,5 @@
-import { Train } from '../../../src/domain/models/train';
-import { TrainRepository } from '../../../src/domain/repositories/train-repository';
+import { Train } from '../../../src/modules/catalog/domain/models/train';
+import { TrainRepository } from '../../../src/modules/catalog/domain/repositories/train-repository';
 
 export class InMemoryTrainRepo implements TrainRepository {
   private trains: Train[] = [];

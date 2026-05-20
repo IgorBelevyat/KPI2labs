@@ -1,5 +1,5 @@
-import { Route, RouteStop } from '../../../../src/domain/models/route';
-import { DomainError } from '../../../../src/domain/errors/domain-error';
+import { Route, RouteStop } from '../../../../src/modules/catalog/domain/models/route';
+import { DomainError } from '../../../../src/shared/errors/domain-error';
 
 describe('Route Aggregate', () => {
   it('should create a valid route with 2+ stops', () => {

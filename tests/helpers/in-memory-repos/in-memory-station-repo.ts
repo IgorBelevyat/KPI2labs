@@ -1,5 +1,5 @@
-import { Station } from '../../../src/domain/models/station';
-import { StationRepository } from '../../../src/domain/repositories/station-repository';
+import { Station } from '../../../src/modules/catalog/domain/models/station';
+import { StationRepository } from '../../../src/modules/catalog/domain/repositories/station-repository';
 
 export class InMemoryStationRepo implements StationRepository {
   private stations: Station[] = [];

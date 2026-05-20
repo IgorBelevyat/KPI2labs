@@ -1,10 +1,10 @@
-import { TrainFactory } from '../../../../src/domain/factories/train-factory';
-import { Train } from '../../../../src/domain/models/train';
-import { Route, RouteStop } from '../../../../src/domain/models/route';
-import { TrainNumber } from '../../../../src/domain/value-objects/train-number';
-import { TimeRange } from '../../../../src/domain/value-objects/time-range';
+import { TrainFactory } from '../../../../src/modules/catalog/domain/factories/train-factory';
+import { Train } from '../../../../src/modules/catalog/domain/models/train';
+import { Route, RouteStop } from '../../../../src/modules/catalog/domain/models/route';
+import { TrainNumber } from '../../../../src/modules/catalog/domain/value-objects/train-number';
+import { TimeRange } from '../../../../src/modules/catalog/domain/value-objects/time-range';
 import { InMemoryTrainRepo, InMemoryRouteRepo } from '../../../helpers/in-memory-repos';
-import { ConflictError, NotFoundError } from '../../../../src/domain/errors/domain-error';
+import { ConflictError, NotFoundError } from '../../../../src/shared/errors/domain-error';
 
 describe('TrainFactory', () => {
   const route = new Route('route-1', [

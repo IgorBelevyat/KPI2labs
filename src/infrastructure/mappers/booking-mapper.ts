@@ -1,5 +1,5 @@
 import { Booking as PrismaBooking } from '@prisma/client';
-import { Booking, BookingStatus } from '../../domain/models/booking';
+import { Booking, BookingStatus } from '../../modules/booking/domain/models/booking';
 
 export class BookingMapper {
   static toDomain(raw: PrismaBooking): Booking {

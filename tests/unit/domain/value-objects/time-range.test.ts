@@ -1,5 +1,5 @@
-import { TimeRange } from '../../../../src/domain/value-objects/time-range';
-import { DomainError } from '../../../../src/domain/errors/domain-error';
+import { TimeRange } from '../../../../src/modules/catalog/domain/value-objects/time-range';
+import { DomainError } from '../../../../src/shared/errors/domain-error';
 
 describe('TimeRange Value Object', () => {
   it('should create valid time range', () => {

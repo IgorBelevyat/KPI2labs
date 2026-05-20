@@ -1,5 +1,5 @@
-import { Booking } from '../../../../src/domain/models/booking';
-import { DomainError, AuthorizationError } from '../../../../src/domain/errors/domain-error';
+import { Booking } from '../../../../src/modules/booking/domain/models/booking';
+import { DomainError, AuthorizationError } from '../../../../src/shared/errors/domain-error';
 
 describe('Booking Entity', () => {
   const makeBooking = (overrides?: Partial<{ userId: string; status: 'created' | 'cancelled' }>) => {

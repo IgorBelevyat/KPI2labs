@@ -1,7 +1,7 @@
-import { StationFactory } from '../../../../src/domain/factories/station-factory';
-import { Station } from '../../../../src/domain/models/station';
+import { StationFactory } from '../../../../src/modules/catalog/domain/factories/station-factory';
+import { Station } from '../../../../src/modules/catalog/domain/models/station';
 import { InMemoryStationRepo } from '../../../helpers/in-memory-repos';
-import { ConflictError } from '../../../../src/domain/errors/domain-error';
+import { ConflictError } from '../../../../src/shared/errors/domain-error';
 
 describe('StationFactory', () => {
   let repo: InMemoryStationRepo;

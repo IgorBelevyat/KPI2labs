@@ -1,5 +1,5 @@
-import { Station } from '../../../../src/domain/models/station';
-import { DomainError } from '../../../../src/domain/errors/domain-error';
+import { Station } from '../../../../src/modules/catalog/domain/models/station';
+import { DomainError } from '../../../../src/shared/errors/domain-error';
 
 describe('Station Entity', () => {
   it('should create a valid station', () => {

@@ -1,4 +1,4 @@
-import { DomainError } from '../errors/domain-error';
+import { DomainError } from '../../shared/errors/domain-error';
 
 export class Password {
   private readonly _value: string;

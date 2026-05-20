@@ -1,5 +1,5 @@
-import { TrainNumber } from '../../../../src/domain/value-objects/train-number';
-import { DomainError } from '../../../../src/domain/errors/domain-error';
+import { TrainNumber } from '../../../../src/modules/catalog/domain/value-objects/train-number';
+import { DomainError } from '../../../../src/shared/errors/domain-error';
 
 describe('TrainNumber Value Object', () => {
   it('should create valid train number', () => {

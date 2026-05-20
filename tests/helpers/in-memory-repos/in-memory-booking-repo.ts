@@ -1,5 +1,5 @@
-import { Booking } from '../../../src/domain/models/booking';
-import { BookingRepository } from '../../../src/domain/repositories/booking-repository';
+import { Booking } from '../../../src/modules/booking/domain/models/booking';
+import { BookingRepository } from '../../../src/modules/booking/domain/repositories/booking-repository';
 
 export class InMemoryBookingRepo implements BookingRepository {
   private bookings: Booking[] = [];

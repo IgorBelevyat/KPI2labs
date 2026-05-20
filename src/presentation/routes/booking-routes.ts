@@ -1,5 +1,5 @@
 import { Router, RequestHandler } from 'express';
-import { BookingController } from '../controllers/booking-controller';
+import { BookingController } from '../../modules/booking/presentation/controllers/booking-controller';
 import { validateCreateBooking } from '../validators/booking-validator';
 
 export function createBookingRoutes(controller: BookingController, authMiddleware: RequestHandler): Router {

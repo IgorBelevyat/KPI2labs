@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: ticketbooking-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ticket_booking
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - ticket_network
+    restart: unless-stopped
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: ticketbooking-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - '2181:2181'
+    networks:
+      - ticket_network
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ticketbooking-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - '9092:9092'
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    networks:
+      - ticket_network
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ticketbooking-web
+    depends_on:
+      - database
+      - kafka
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/ticket_booking?schema=public
+      - JWT_ACCESS_SECRET=your-access-secret-change-me
+      - JWT_REFRESH_SECRET=your-refresh-secret-change-me
+      - JWT_ACCESS_EXPIRES_IN=15m
+      - JWT_REFRESH_EXPIRES_IN=7d
+      - PORT=8000
+      - NODE_ENV=production
+      - NOTIFICATION_MODE=async
+      - KAFKA_BROKER=kafka:9092
+    networks:
+      - ticket_network
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: ticketbooking-nginx
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+    networks:
+      - ticket_network
+    restart: unless-stopped
+
+networks:
+  ticket_network:
+    driver: bridge
+

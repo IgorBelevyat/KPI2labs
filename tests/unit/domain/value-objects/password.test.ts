@@ -1,5 +1,5 @@
 import { Password } from '../../../../src/domain/value-objects/password';
-import { DomainError } from '../../../../src/domain/errors/domain-error';
+import { DomainError } from '../../../../src/shared/errors/domain-error';
 
 describe('Password Value Object', () => {
   it('should create from valid raw password', () => {

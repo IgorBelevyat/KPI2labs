@@ -1,7 +1,7 @@
-import { RouteFactory } from '../../../../src/domain/factories/route-factory';
-import { Station } from '../../../../src/domain/models/station';
+import { RouteFactory } from '../../../../src/modules/catalog/domain/factories/route-factory';
+import { Station } from '../../../../src/modules/catalog/domain/models/station';
 import { InMemoryStationRepo } from '../../../helpers/in-memory-repos';
-import { NotFoundError, DomainError } from '../../../../src/domain/errors/domain-error';
+import { NotFoundError, DomainError } from '../../../../src/shared/errors/domain-error';
 
 describe('RouteFactory', () => {
   it('should create a route when all stations exist', async () => {

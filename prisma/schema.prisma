@@ -125,3 +125,14 @@ model RefreshToken {
 
   @@map("refresh_tokens")
 }
+
+model AnalyticsDailyStat {
+  id            String   @id @default(uuid())
+  date          DateTime @unique @db.Date
+  ticketsSold   Int      @default(0) @map("tickets_sold")
+  revenue       Float    @default(0)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("analytics_daily_stats")
+}

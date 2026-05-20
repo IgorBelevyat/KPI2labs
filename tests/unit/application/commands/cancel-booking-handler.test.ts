@@ -1,8 +1,8 @@
-import { CancelBookingCommandHandler } from '../../../../src/application/commands/bookings/cancel-booking.handler';
-import { Booking } from '../../../../src/domain/models/booking';
+import { CancelBookingCommandHandler } from '../../../../src/modules/booking/application/commands/bookings/cancel-booking.handler';
+import { Booking } from '../../../../src/modules/booking/domain/models/booking';
 import { InMemoryBookingRepo } from '../../../helpers/in-memory-repos';
-import { NotificationService, BookingNotificationData, WelcomeNotificationData } from '../../../../src/application/interfaces/notification-service';
-import { EventBus } from '../../../../src/application/interfaces/event-bus';
+import { NotificationService, BookingNotificationData, WelcomeNotificationData } from '../../../../src/modules/booking/application/interfaces/notification-service';
+import { EventBus } from '../../../../src/shared/event-bus/event-bus.interface';
 import { IntegrationEvent } from '../../../../src/domain/events/integration-events';
 
 // ── Test doubles ──────────────────────────────────────────────────────

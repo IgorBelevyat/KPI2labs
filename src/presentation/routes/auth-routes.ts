@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { AuthController } from '../controllers/auth-controller';
+import { AuthController } from '../../modules/booking/presentation/controllers/auth-controller';
 import { validateRegister, validateLogin, validateRefreshToken } from '../validators/auth-validator';
 
 export function createAuthRoutes(controller: AuthController): Router {

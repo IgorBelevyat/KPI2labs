@@ -1,7 +1,7 @@
 import { Router, RequestHandler } from 'express';
-import { TrainController } from '../controllers/train-controller';
+import { TrainController } from '../../modules/catalog/presentation/controllers/train-controller';
 import { validateCreateTrain, validateUpdateTrain, validateAddCarriage } from '../validators/train-validator';
-import { adminMiddleware } from '../middleware/admin-middleware';
+import { adminMiddleware } from '../../shared/middlewares/admin-middleware';
 
 export function createTrainRoutes(controller: TrainController, authMiddleware: RequestHandler): Router {
   const router = Router();

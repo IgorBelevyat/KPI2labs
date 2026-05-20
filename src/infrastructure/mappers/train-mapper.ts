@@ -3,9 +3,9 @@ import {
   Carriage as PrismaCarriage,
   Seat as PrismaSeat,
 } from '@prisma/client';
-import { Train, Carriage, Seat, CarriageType } from '../../domain/models/train';
-import { TrainNumber } from '../../domain/value-objects/train-number';
-import { TimeRange } from '../../domain/value-objects/time-range';
+import { Train, Carriage, Seat, CarriageType } from '../../modules/catalog/domain/models/train';
+import { TrainNumber } from '../../modules/catalog/domain/value-objects/train-number';
+import { TimeRange } from '../../modules/catalog/domain/value-objects/time-range';
 
 type PrismaTrainWithCarriages = PrismaTrain & {
   carriages: (PrismaCarriage & { seats: PrismaSeat[] })[];

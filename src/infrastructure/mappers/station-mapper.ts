@@ -1,5 +1,5 @@
 import { Station as PrismaStation } from '@prisma/client';
-import { Station } from '../../domain/models/station';
+import { Station } from '../../modules/catalog/domain/models/station';
 
 export class StationMapper {
   static toDomain(raw: PrismaStation): Station {

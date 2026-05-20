@@ -1,5 +1,5 @@
 import { Email } from '../../../../src/domain/value-objects/email';
-import { DomainError } from '../../../../src/domain/errors/domain-error';
+import { DomainError } from '../../../../src/shared/errors/domain-error';
 
 describe('Email Value Object', () => {
   it('should create a valid email', () => {

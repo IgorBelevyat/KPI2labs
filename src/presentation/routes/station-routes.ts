@@ -1,7 +1,7 @@
 import { Router, RequestHandler } from 'express';
-import { StationController } from '../controllers/station-controller';
+import { StationController } from '../../modules/catalog/presentation/controllers/station-controller';
 import { validateCreateStation, validateUpdateStation } from '../validators/station-validator';
-import { adminMiddleware } from '../middleware/admin-middleware';
+import { adminMiddleware } from '../../shared/middlewares/admin-middleware';
 
 export function createStationRoutes(controller: StationController, authMiddleware: RequestHandler): Router {
   const router = Router();

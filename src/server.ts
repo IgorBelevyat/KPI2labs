@@ -2,75 +2,75 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
-import prisma from './infrastructure/database/prisma-client';
+import prisma from './shared/database/prisma-client';
 
 // Infrastructure — Repositories (write / domain)
-import { PrismaUserRepository } from './infrastructure/repositories/prisma-user-repository';
-import { PrismaStationRepository } from './infrastructure/repositories/prisma-station-repository';
-import { PrismaRouteRepository } from './infrastructure/repositories/prisma-route-repository';
-import { PrismaTrainRepository } from './infrastructure/repositories/prisma-train-repository';
-import { PrismaBookingRepository } from './infrastructure/repositories/prisma-booking-repository';
+import { PrismaUserRepository } from './modules/booking/infrastructure/repositories/prisma-user-repository';
+import { PrismaStationRepository } from './modules/catalog/infrastructure/repositories/prisma-station-repository';
+import { PrismaRouteRepository } from './modules/catalog/infrastructure/repositories/prisma-route-repository';
+import { PrismaTrainRepository } from './modules/catalog/infrastructure/repositories/prisma-train-repository';
+import { PrismaBookingRepository } from './modules/booking/infrastructure/repositories/prisma-booking-repository';
 
 // Infrastructure — Read Repositories (query)
-import { PrismaStationReadRepository } from './infrastructure/repositories/prisma-station-read-repository';
-import { PrismaRouteReadRepository } from './infrastructure/repositories/prisma-route-read-repository';
-import { PrismaTrainReadRepository } from './infrastructure/repositories/prisma-train-read-repository';
-import { PrismaBookingReadRepository } from './infrastructure/repositories/prisma-booking-read-repository';
+import { PrismaStationReadRepository } from './modules/catalog/infrastructure/repositories/prisma-station-read-repository';
+import { PrismaRouteReadRepository } from './modules/catalog/infrastructure/repositories/prisma-route-read-repository';
+import { PrismaTrainReadRepository } from './modules/catalog/infrastructure/repositories/prisma-train-read-repository';
+import { PrismaBookingReadRepository } from './modules/booking/infrastructure/repositories/prisma-booking-read-repository';
 
 // Infrastructure — Auth
-import { BcryptPasswordHasher } from './infrastructure/auth/bcrypt-password-hasher';
-import { JwtTokenService } from './infrastructure/auth/jwt-token-service';
+import { BcryptPasswordHasher } from './shared/auth/bcrypt-password-hasher';
+import { JwtTokenService } from './shared/auth/jwt-token-service';
 
 // Infrastructure — Notifications
 import { ConsoleNotificationService } from './infrastructure/notifications/console-notification-service';
 
 // Infrastructure — Messaging (Kafka)
 import { Kafka } from 'kafkajs';
-import { KafkaEventBus } from './infrastructure/messaging/kafka-event-bus';
-import { NotificationSubscriber } from './infrastructure/messaging/notification-subscriber';
+import { KafkaEventBus } from './shared/event-bus/kafka-event-bus';
+import { NotificationSubscriber } from './shared/event-bus/notification-subscriber';
 
 // Domain — Factories
-import { UserFactory } from './domain/factories/user-factory';
-import { StationFactory } from './domain/factories/station-factory';
-import { RouteFactory } from './domain/factories/route-factory';
-import { TrainFactory } from './domain/factories/train-factory';
-import { BookingFactory } from './domain/factories/booking-factory';
+import { UserFactory } from './modules/booking/domain/factories/user-factory';
+import { StationFactory } from './modules/catalog/domain/factories/station-factory';
+import { RouteFactory } from './modules/catalog/domain/factories/route-factory';
+import { TrainFactory } from './modules/catalog/domain/factories/train-factory';
+import { BookingFactory } from './modules/booking/domain/factories/booking-factory';
 
 // Application — Command Handlers
-import { RegisterUserCommandHandler } from './application/commands/auth/register-user.handler';
-import { LoginUserCommandHandler } from './application/commands/auth/login-user.handler';
-import { RefreshTokenCommandHandler } from './application/commands/auth/refresh-token.handler';
-import { CreateStationCommandHandler } from './application/commands/stations/create-station.handler';
-import { UpdateStationCommandHandler } from './application/commands/stations/update-station.handler';
-import { DeleteStationCommandHandler } from './application/commands/stations/delete-station.handler';
-import { CreateRouteCommandHandler } from './application/commands/routes/create-route.handler';
-import { UpdateRouteCommandHandler } from './application/commands/routes/update-route.handler';
-import { DeleteRouteCommandHandler } from './application/commands/routes/delete-route.handler';
-import { CreateTrainCommandHandler } from './application/commands/trains/create-train.handler';
-import { UpdateTrainCommandHandler } from './application/commands/trains/update-train.handler';
-import { DeleteTrainCommandHandler } from './application/commands/trains/delete-train.handler';
-import { AddCarriageCommandHandler } from './application/commands/trains/add-carriage.handler';
-import { CreateBookingCommandHandler } from './application/commands/bookings/create-booking.handler';
-import { CancelBookingCommandHandler } from './application/commands/bookings/cancel-booking.handler';
+import { RegisterUserCommandHandler } from './modules/booking/application/commands/auth/register-user.handler';
+import { LoginUserCommandHandler } from './modules/booking/application/commands/auth/login-user.handler';
+import { RefreshTokenCommandHandler } from './modules/booking/application/commands/auth/refresh-token.handler';
+import { CreateStationCommandHandler } from './modules/catalog/application/commands/stations/create-station.handler';
+import { UpdateStationCommandHandler } from './modules/catalog/application/commands/stations/update-station.handler';
+import { DeleteStationCommandHandler } from './modules/catalog/application/commands/stations/delete-station.handler';
+import { CreateRouteCommandHandler } from './modules/catalog/application/commands/routes/create-route.handler';
+import { UpdateRouteCommandHandler } from './modules/catalog/application/commands/routes/update-route.handler';
+import { DeleteRouteCommandHandler } from './modules/catalog/application/commands/routes/delete-route.handler';
+import { CreateTrainCommandHandler } from './modules/catalog/application/commands/trains/create-train.handler';
+import { UpdateTrainCommandHandler } from './modules/catalog/application/commands/trains/update-train.handler';
+import { DeleteTrainCommandHandler } from './modules/catalog/application/commands/trains/delete-train.handler';
+import { AddCarriageCommandHandler } from './modules/catalog/application/commands/trains/add-carriage.handler';
+import { CreateBookingCommandHandler } from './modules/booking/application/commands/bookings/create-booking.handler';
+import { CancelBookingCommandHandler } from './modules/booking/application/commands/bookings/cancel-booking.handler';
 
 // Application — Query Handlers
-import { GetStationsQueryHandler } from './application/queries/stations/get-stations.handler';
-import { GetRoutesQueryHandler } from './application/queries/routes/get-routes.handler';
-import { GetAllTrainsQueryHandler } from './application/queries/trains/get-all-trains.handler';
-import { SearchTrainsQueryHandler } from './application/queries/trains/search-trains.handler';
-import { GetAvailableSeatsQueryHandler } from './application/queries/trains/get-available-seats.handler';
-import { GetUserBookingsQueryHandler } from './application/queries/bookings/get-user-bookings.handler';
+import { GetStationsQueryHandler } from './modules/catalog/application/queries/stations/get-stations.handler';
+import { GetRoutesQueryHandler } from './modules/catalog/application/queries/routes/get-routes.handler';
+import { GetAllTrainsQueryHandler } from './modules/catalog/application/queries/trains/get-all-trains.handler';
+import { SearchTrainsQueryHandler } from './modules/catalog/application/queries/trains/search-trains.handler';
+import { GetAvailableSeatsQueryHandler } from './modules/catalog/application/queries/trains/get-available-seats.handler';
+import { GetUserBookingsQueryHandler } from './modules/booking/application/queries/bookings/get-user-bookings.handler';
 
 // Presentation
-import { AuthController } from './presentation/controllers/auth-controller';
-import { StationController } from './presentation/controllers/station-controller';
-import { RouteController } from './presentation/controllers/route-controller';
-import { TrainController } from './presentation/controllers/train-controller';
-import { BookingController } from './presentation/controllers/booking-controller';
+import { AuthController } from './modules/booking/presentation/controllers/auth-controller';
+import { StationController } from './modules/catalog/presentation/controllers/station-controller';
+import { RouteController } from './modules/catalog/presentation/controllers/route-controller';
+import { TrainController } from './modules/catalog/presentation/controllers/train-controller';
+import { BookingController } from './modules/booking/presentation/controllers/booking-controller';
 
-import { createAuthMiddleware } from './presentation/middleware/auth-middleware';
-import { errorHandler } from './presentation/middleware/error-handler';
-import { contentNegotiation } from './presentation/middleware/content-negotiation';
+import { createAuthMiddleware } from './shared/middlewares/auth-middleware';
+import { errorHandler } from './shared/middlewares/error-handler';
+import { contentNegotiation } from './shared/middlewares/content-negotiation';
 import { createApiRouter } from './presentation/routes';
 
 // Infrastructure
@@ -96,7 +96,28 @@ const userFactory = new UserFactory(userRepo, hasher);
 const stationFactory = new StationFactory(stationRepo);
 const routeFactory = new RouteFactory(stationRepo);
 const trainFactory = new TrainFactory(trainRepo, routeRepo);
-const bookingFactory = new BookingFactory(bookingRepo, trainRepo);
+import { CatalogFacade } from './modules/catalog';
+import { CatalogAdapter } from './modules/booking/infrastructure/acl/catalog-adapter';
+
+const catalogFacade = new CatalogFacade(trainRepo);
+const catalogAdapter = new CatalogAdapter(catalogFacade);
+const bookingFactory = new BookingFactory(bookingRepo, catalogAdapter);
+
+// Analytics Infrastructure
+import { PrismaAnalyticsRepository } from './modules/analytics/infrastructure/repositories/prisma-analytics-repository';
+import { PrismaAnalyticsReadRepository } from './modules/analytics/infrastructure/repositories/prisma-analytics-read-repository';
+import { AnalyticsSubscriber } from './modules/analytics/infrastructure/acl/analytics-subscriber';
+
+// Analytics Application
+import { GetStatsQueryHandler } from './modules/analytics/application/queries/get-stats.handler';
+
+// Analytics Presentation
+import { AnalyticsController } from './modules/analytics/presentation/controllers/analytics-controller';
+
+const analyticsRepo = new PrismaAnalyticsRepository(prisma);
+const analyticsReadRepo = new PrismaAnalyticsReadRepository(prisma);
+const getStatsHandler = new GetStatsQueryHandler(analyticsReadRepo);
+const analyticsController = new AnalyticsController(getStatsHandler);
 
 // Notification Mode (sync vs async)
 const NOTIFICATION_MODE = process.env.NOTIFICATION_MODE || 'sync';
@@ -111,10 +132,15 @@ if (NOTIFICATION_MODE === 'async') {
   });
   kafkaEventBus = new KafkaEventBus(kafka);
 
-  // Subscriber — reacts to events and delegates to NotificationService
-  const subscriber = new NotificationSubscriber(notificationService);
-  kafkaEventBus.subscribe('BookingCreated', (e) => subscriber.onBookingCreated(e));
-  kafkaEventBus.subscribe('BookingCancelled', (e) => subscriber.onBookingCancelled(e));
+  // Original Notification Subscriber
+  const notificationSubscriber = new NotificationSubscriber(notificationService);
+  kafkaEventBus.subscribe('BookingCreated', (e) => notificationSubscriber.onBookingCreated(e));
+  kafkaEventBus.subscribe('BookingCancelled', (e) => notificationSubscriber.onBookingCancelled(e));
+
+  // Analytics Subscriber
+  const analyticsSubscriber = new AnalyticsSubscriber(analyticsRepo);
+  kafkaEventBus.subscribe('BookingCreated', (e) => analyticsSubscriber.handleEvent(e));
+  kafkaEventBus.subscribe('BookingCancelled', (e) => analyticsSubscriber.handleEvent(e));
 }
 
 console.log(`[Config] NOTIFICATION_MODE = ${NOTIFICATION_MODE}`);
@@ -173,7 +199,14 @@ app.use(express.json());
 
 const authMiddleware = createAuthMiddleware(tokenService);
 const apiRouter = createApiRouter(
-  { auth: authController, station: stationController, route: routeController, train: trainController, booking: bookingController },
+  { 
+    auth: authController, 
+    station: stationController, 
+    route: routeController, 
+    train: trainController, 
+    booking: bookingController,
+    analytics: analyticsController 
+  },
   authMiddleware
 );
 

@@ -1,5 +1,5 @@
-import { NotificationSubscriber } from '../../../../src/infrastructure/messaging/notification-subscriber';
-import { NotificationService, BookingNotificationData, WelcomeNotificationData } from '../../../../src/application/interfaces/notification-service';
+import { NotificationSubscriber } from '../../../../src/shared/event-bus/notification-subscriber';
+import { NotificationService, BookingNotificationData, WelcomeNotificationData } from '../../../../src/modules/booking/application/interfaces/notification-service';
 import { BookingCreated, BookingCancelled } from '../../../../src/domain/events/integration-events';
 
 // ── Test double ──────────────────────────────────────────────────────

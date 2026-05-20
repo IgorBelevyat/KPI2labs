@@ -1,5 +1,5 @@
 import { Route as PrismaRoute, RouteStop as PrismaRouteStop } from '@prisma/client';
-import { Route, RouteStop } from '../../domain/models/route';
+import { Route, RouteStop } from '../../modules/catalog/domain/models/route';
 
 type PrismaRouteWithStops = PrismaRoute & {
   stops: PrismaRouteStop[];

@@ -1,1 +1,1 @@
-export { DomainError, NotFoundError, ConflictError, AuthorizationError } from './domain-error';
+export { DomainError, NotFoundError, ConflictError, AuthorizationError } from '../../shared/errors/domain-error';

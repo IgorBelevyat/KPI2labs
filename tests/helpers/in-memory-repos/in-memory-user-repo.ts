@@ -1,5 +1,5 @@
-import { User } from '../../../src/domain/models/user';
-import { UserRepository } from '../../../src/domain/repositories/user-repository';
+import { User } from '../../../src/modules/booking/domain/models/user';
+import { UserRepository } from '../../../src/modules/booking/domain/repositories/user-repository';
 
 export class InMemoryUserRepo implements UserRepository {
   private users: User[] = [];

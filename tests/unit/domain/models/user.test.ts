@@ -1,4 +1,4 @@
-import { User } from '../../../../src/domain/models/user';
+import { User } from '../../../../src/modules/booking/domain/models/user';
 import { Email } from '../../../../src/domain/value-objects/email';
 import { Password } from '../../../../src/domain/value-objects/password';
 

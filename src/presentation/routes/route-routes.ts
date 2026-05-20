@@ -1,7 +1,7 @@
 import { Router, RequestHandler } from 'express';
-import { RouteController } from '../controllers/route-controller';
+import { RouteController } from '../../modules/catalog/presentation/controllers/route-controller';
 import { validateCreateRoute, validateUpdateRoute } from '../validators/route-validator';
-import { adminMiddleware } from '../middleware/admin-middleware';
+import { adminMiddleware } from '../../shared/middlewares/admin-middleware';
 
 export function createRouteRoutes(controller: RouteController, authMiddleware: RequestHandler): Router {
   const router = Router();

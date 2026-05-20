@@ -1,7 +1,7 @@
-import { Train, Carriage, Seat } from '../../../../src/domain/models/train';
-import { TrainNumber } from '../../../../src/domain/value-objects/train-number';
-import { TimeRange } from '../../../../src/domain/value-objects/time-range';
-import { DomainError } from '../../../../src/domain/errors/domain-error';
+import { Train, Carriage, Seat } from '../../../../src/modules/catalog/domain/models/train';
+import { TrainNumber } from '../../../../src/modules/catalog/domain/value-objects/train-number';
+import { TimeRange } from '../../../../src/modules/catalog/domain/value-objects/time-range';
+import { DomainError } from '../../../../src/shared/errors/domain-error';
 
 describe('Train Aggregate', () => {
   const makeSchedule = () => new TimeRange(

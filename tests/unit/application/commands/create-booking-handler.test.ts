@@ -1,11 +1,9 @@
-import { CreateBookingCommandHandler } from '../../../../src/application/commands/bookings/create-booking.handler';
-import { BookingFactory } from '../../../../src/domain/factories/booking-factory';
-import { InMemoryBookingRepo, InMemoryTrainRepo } from '../../../helpers/in-memory-repos';
-import { Train, Carriage, Seat } from '../../../../src/domain/models/train';
-import { TrainNumber } from '../../../../src/domain/value-objects/train-number';
-import { TimeRange } from '../../../../src/domain/value-objects/time-range';
-import { NotificationService, BookingNotificationData, WelcomeNotificationData } from '../../../../src/application/interfaces/notification-service';
-import { EventBus } from '../../../../src/application/interfaces/event-bus';
+import { CreateBookingCommandHandler } from '../../../../src/modules/booking/application/commands/bookings/create-booking.handler';
+import { BookingFactory } from '../../../../src/modules/booking/domain/factories/booking-factory';
+import { InMemoryBookingRepo } from '../../../helpers/in-memory-repos/in-memory-booking-repo';
+import { CatalogService, TrainInfo } from '../../../../src/modules/booking/domain/repositories/catalog-service.interface';
+import { NotificationService, BookingNotificationData, WelcomeNotificationData } from '../../../../src/modules/booking/application/interfaces/notification-service';
+import { EventBus } from '../../../../src/shared/event-bus/event-bus.interface';
 import { IntegrationEvent } from '../../../../src/domain/events/integration-events';
 
 // ── Test doubles ──────────────────────────────────────────────────────
@@ -31,17 +29,20 @@ class MockEventBus implements EventBus {
   subscribe(_eventType: string, _handler: (event: IntegrationEvent) => Promise<void>): void {}
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────
+class MockCatalogService implements CatalogService {
+  trains: Record<string, { id: string, routeId: string, seats: string[] }> = {};
 
-const makeTrain = () => {
-  const seats = [new Seat('seat-1', 1, 'car-1')];
-  const carriage = new Carriage('car-1', 1, 'coupe', 'train-1', seats);
-  return new Train(
-    'train-1', new TrainNumber('K42'), 'route-1',
-    new TimeRange(new Date('2027-06-01T08:00Z'), new Date('2027-06-01T14:00Z')),
-    [carriage]
-  );
-};
+  async getTrainInfo(trainId: string): Promise<TrainInfo | null> {
+    const t = this.trains[trainId];
+    return t ? { id: t.id, routeId: t.routeId } : null;
+  }
+  async verifySeatExists(trainId: string, seatId: string): Promise<boolean> {
+    const t = this.trains[trainId];
+    return t ? t.seats.includes(seatId) : false;
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
 
 const makeCommand = () => ({
   userId: 'user-1',
@@ -54,14 +55,14 @@ const makeCommand = () => ({
 
 describe('CreateBookingCommandHandler', () => {
   let bookingRepo: InMemoryBookingRepo;
-  let trainRepo: InMemoryTrainRepo;
+  let catalogService: MockCatalogService;
   let factory: BookingFactory;
 
   beforeEach(async () => {
     bookingRepo = new InMemoryBookingRepo();
-    trainRepo = new InMemoryTrainRepo();
-    factory = new BookingFactory(bookingRepo, trainRepo);
-    await trainRepo.save(makeTrain());
+    catalogService = new MockCatalogService();
+    factory = new BookingFactory(bookingRepo, catalogService);
+    catalogService.trains['train-1'] = { id: 'train-1', routeId: 'route-1', seats: ['seat-1'] };
   });
 
   describe('SYNC mode', () => {

@@ -2,7 +2,7 @@ import {
   NotificationService,
   BookingNotificationData,
   WelcomeNotificationData,
-} from '../../application/interfaces/notification-service';
+} from '../../modules/booking/application/interfaces/notification-service';
 
 export class ConsoleNotificationService implements NotificationService {
   async sendBookingConfirmation(data: BookingNotificationData): Promise<void> {

@@ -1,9 +1,9 @@
-import { UserFactory, PasswordHasher } from '../../../../src/domain/factories/user-factory';
-import { User } from '../../../../src/domain/models/user';
+import { UserFactory, PasswordHasher } from '../../../../src/modules/booking/domain/factories/user-factory';
+import { User } from '../../../../src/modules/booking/domain/models/user';
 import { Email } from '../../../../src/domain/value-objects/email';
 import { Password } from '../../../../src/domain/value-objects/password';
 import { InMemoryUserRepo } from '../../../helpers/in-memory-repos';
-import { ConflictError, DomainError } from '../../../../src/domain/errors/domain-error';
+import { ConflictError, DomainError } from '../../../../src/shared/errors/domain-error';
 
 class FakeHasher implements PasswordHasher {
   async hash(raw: string): Promise<string> { return `hashed_${raw}`; }

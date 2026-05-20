@@ -1,5 +1,5 @@
-import { Route } from '../../../src/domain/models/route';
-import { RouteRepository } from '../../../src/domain/repositories/route-repository';
+import { Route } from '../../../src/modules/catalog/domain/models/route';
+import { RouteRepository } from '../../../src/modules/catalog/domain/repositories/route-repository';
 
 export class InMemoryRouteRepo implements RouteRepository {
   private routes: Route[] = [];
