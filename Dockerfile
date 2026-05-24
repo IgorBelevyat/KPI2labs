@@ -17,10 +17,10 @@ COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci --omit=dev && npm cache clean --force
 RUN npm install prisma@5.11.0 && npm cache clean --force
+COPY prisma.config.ts ./
 RUN npx prisma generate
 
 COPY --from=builder /app/dist ./dist
-COPY prisma.config.ts ./
 COPY --from=builder /app/prisma/seed.js ./prisma/
 
 ENV NODE_ENV=production
