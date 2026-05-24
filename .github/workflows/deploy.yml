@@ -1,0 +1,28 @@
+name: CD Pipeline (Deploy)
+
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  deploy-to-runner:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x ./deploy/deploy.sh ./deploy/verify.sh
+
+      - name: Run Deploy Script
+        env:
+          TARGET_USER: ${{ secrets.TARGET_USER }}
+          TARGET_HOST: ${{ secrets.TARGET_HOST }}
+        run: ./deploy/deploy.sh
+
+      - name: Run Verification Script
+        env:
+          TARGET_USER: ${{ secrets.TARGET_USER }}
+          TARGET_HOST: ${{ secrets.TARGET_HOST }}
+        run: ./deploy/verify.sh

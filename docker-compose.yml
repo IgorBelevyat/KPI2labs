@@ -83,4 +83,3 @@ services:
 networks:
   ticket_network:
     driver: bridge
-

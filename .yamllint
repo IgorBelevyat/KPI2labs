@@ -1,0 +1,17 @@
+extends: default
+
+rules:
+  line-length: disable
+  document-start: disable
+  truthy:
+    allowed-values: ["true", "false", "on", "off", "yes", "no"]
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+ignore: |
+  node_modules/
+  dist/
+  coverage/
+  frontend/node_modules/
+  frontend/dist/

@@ -6,9 +6,9 @@ COPY prisma ./prisma/
 RUN npm ci
 
 COPY . .
-RUN npx prisma generate
-RUN npm run build
-RUN npx tsc prisma/seed.ts --esModuleInterop --skipLibCheck --ignoreConfig
+RUN npx prisma generate \
+    && npm run build \
+    && npx tsc prisma/seed.ts --esModuleInterop --skipLibCheck --ignoreConfig
 
 FROM node:20-alpine AS runner
 
@@ -16,7 +16,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci --omit=dev && npm cache clean --force
-RUN npm install prisma && npm cache clean --force
+RUN npm install prisma@5.11.0 && npm cache clean --force
 RUN npx prisma generate
 
 COPY --from=builder /app/dist ./dist

@@ -16,7 +16,7 @@ export function contentNegotiation(req: Request, res: Response, next: NextFuncti
 }
 
 function renderDataAsHtml(data: unknown, method: string, url: string): string {
-  let body = '';
+  let body: string;
 
   if (Array.isArray(data)) {
     if (data.length === 0) {
