@@ -46,9 +46,7 @@ services:
     restart: unless-stopped
 
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/igorbelevyat/kpi2labs/backend:latest
     container_name: ticketbooking-web
     depends_on:
       - database
