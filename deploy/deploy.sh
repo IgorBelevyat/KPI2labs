@@ -20,6 +20,8 @@ ssh $SSH_OPTS $TARGET "mkdir -p $DEPLOY_DIR"
 echo "Копіювання файлів конфігурації (docker-compose.yml)..."
 cd "$(dirname "$0")/.."
 scp $SSH_OPTS docker-compose.yml $TARGET:$DEPLOY_DIR/docker-compose.yml
+scp $SSH_OPTS Dockerfile.nginx $TARGET:$DEPLOY_DIR/Dockerfile.nginx
+scp -r $SSH_OPTS deploy $TARGET:$DEPLOY_DIR/deploy
 
 echo "Запуск розгортання на цільовій машині..."
 ssh $SSH_OPTS $TARGET << EOF
