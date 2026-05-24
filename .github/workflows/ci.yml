@@ -31,7 +31,7 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
-        
+
       - name: Lint Backend
         run: npm run lint
 
@@ -46,6 +46,25 @@ jobs:
 
   test-and-coverage:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ticket_booking
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ticket_booking?schema=public
+      JWT_ACCESS_SECRET: test-secret
+      JWT_REFRESH_SECRET: test-secret
+      NOTIFICATION_MODE: async
     steps:
       - uses: actions/checkout@v4
 
@@ -60,7 +79,10 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
-        
+
+      - name: Setup Database Schema
+        run: npx prisma db push
+
       - name: Run Tests with Coverage
         run: npm run test:coverage
 

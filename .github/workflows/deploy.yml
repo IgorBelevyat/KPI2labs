@@ -6,7 +6,7 @@ on:
       - '*'
   deploy-to-runner:
     runs-on: self-hosted
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,7 +19,7 @@ on:
           TARGET_USER: ${{ secrets.TARGET_USER }}
           TARGET_HOST: ${{ secrets.TARGET_HOST }}
         run: ./deploy/deploy.sh
-        
+
       - name: Run Verification Script
         env:
           TARGET_USER: ${{ secrets.TARGET_USER }}
