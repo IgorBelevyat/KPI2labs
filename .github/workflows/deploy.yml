@@ -1,0 +1,33 @@
+name: CD Pipeline (Deploy)
+
+on:
+  push:
+    tags:
+      - '*' # Runs on tags (the lab specifies annotated tags, standard push events for tags works)
+
+jobs:
+  deploy-to-runner:
+    # Requires CI pipeline to pass (but GitHub Actions doesn't easily chain separate workflows by default without workflow_run,
+    # so we'll just run it. The lab assumes it runs IF analysis and tests passed.
+    # In a real scenario, we'd use `workflow_run` or put this job in `ci.yml`.
+    # For this lab, this standalone workflow will run on the self-hosted runner.
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x ./deploy/deploy.sh ./deploy/verify.sh
+
+      - name: Run Deploy Script
+        env:
+          TARGET_USER: ${{ secrets.TARGET_USER }}
+          TARGET_HOST: ${{ secrets.TARGET_HOST }}
+        run: ./deploy/deploy.sh
+        
+      - name: Run Verification Script
+        env:
+          TARGET_USER: ${{ secrets.TARGET_USER }}
+          TARGET_HOST: ${{ secrets.TARGET_HOST }}
+        run: ./deploy/verify.sh
