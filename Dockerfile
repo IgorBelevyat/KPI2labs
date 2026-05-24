@@ -16,10 +16,10 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci --omit=dev && npm cache clean --force
-RUN npm install prisma@5.11.0 && npm cache clean --force
-COPY prisma.config.ts ./
-RUN npx prisma generate
+RUN npm install prisma@7.7.0 && npm cache clean --force
 
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma/seed.js ./prisma/
 
