@@ -66,9 +66,7 @@ services:
     restart: unless-stopped
 
   nginx:
-    build:
-      context: .
-      dockerfile: Dockerfile.nginx
+    image: ghcr.io/igorbelevyat/kpi2labs/frontend:latest
     container_name: ticketbooking-nginx
     depends_on:
       - web
