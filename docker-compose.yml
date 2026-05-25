@@ -52,7 +52,7 @@ services:
       - database
       - kafka
     environment:
-      - DATABASE_URL=postgresql://postgres:WRONG_PASSWORD@database:5432/ticket_booking?schema=public
+      - DATABASE_URL=postgresql://postgres:postgres@database:5432/ticket_booking?schema=public
       - JWT_ACCESS_SECRET=your-access-secret-change-me
       - JWT_REFRESH_SECRET=your-refresh-secret-change-me
       - JWT_ACCESS_EXPIRES_IN=15m
