@@ -16,7 +16,7 @@ describe('User Entity', () => {
   it('should create a valid user', () => {
     const user = makeUser();
     expect(user.id).toBe('u-1');
-    expect(user.name).toBe('John Doe BROKEN');
+    expect(user.name).toBe('John Doe');
     expect(user.email.value).toBe('john@example.com');
     expect(user.role).toBe('user');
   });
