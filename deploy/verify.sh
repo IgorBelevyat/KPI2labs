@@ -19,9 +19,18 @@ ssh $SSH_OPTS $TARGET << 'EOF'
     HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost)
 
     if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 301 ] || [ "$HTTP_STATUS" -eq 404 ]; then
-        echo "Сервіс доступний (HTTP STATUS: $HTTP_STATUS)"
+        echo "Сервіс фронтенду доступний (HTTP STATUS: $HTTP_STATUS)"
     else
-        echo "Помилка: Сервіс недоступний (HTTP STATUS: $HTTP_STATUS)"
+        echo "Помилка: Сервіс фронтенду недоступний (HTTP STATUS: $HTTP_STATUS)"
+        exit 1
+    fi
+
+    # 1.5 Перевірка доступності Бекенду (API health check)
+    API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/health)
+    if [ "$API_STATUS" -eq 200 ]; then
+        echo "API працює стабільно (HTTP STATUS: $API_STATUS)"
+    else
+        echo "Помилка: API не працює або лежить (HTTP STATUS: $API_STATUS)"
         exit 1
     fi
 
