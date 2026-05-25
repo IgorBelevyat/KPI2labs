@@ -29,7 +29,7 @@ ssh $SSH_OPTS $TARGET << 'EOF'
     echo "Очікування готовності API (до 60 секунд)..."
     API_STATUS=0
     for i in {1..12}; do
-        API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/health)
+        API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/health/alive)
         if [ "$API_STATUS" -eq 200 ]; then
             echo "API працює стабільно (HTTP STATUS: $API_STATUS)"
             break
