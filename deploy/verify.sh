@@ -25,12 +25,23 @@ ssh $SSH_OPTS $TARGET << 'EOF'
         exit 1
     fi
 
-    # 1.5 Перевірка доступності Бекенду (API health check)
-    API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/health)
-    if [ "$API_STATUS" -eq 200 ]; then
-        echo "API працює стабільно (HTTP STATUS: $API_STATUS)"
-    else
+    # 1.5 Перевірка доступності Бекенду (API health check) з очікуванням
+    echo "Очікування готовності API (до 60 секунд)..."
+    API_STATUS=0
+    for i in {1..12}; do
+        API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/health)
+        if [ "$API_STATUS" -eq 200 ]; then
+            echo "API працює стабільно (HTTP STATUS: $API_STATUS)"
+            break
+        fi
+        echo "API ще не готове (Отримано $API_STATUS). Чекаємо 5 секунд..."
+        sleep 5
+    done
+
+    if [ "$API_STATUS" -ne 200 ]; then
         echo "Помилка: API не працює або лежить (HTTP STATUS: $API_STATUS)"
+        echo "=== ЛОГИ БЕКЕНДУ (ticketbooking-web) ==="
+        docker logs ticketbooking-web --tail 50
         exit 1
     fi
 
