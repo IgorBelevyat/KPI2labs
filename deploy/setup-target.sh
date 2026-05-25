@@ -5,8 +5,8 @@ set -e
 echo "Оновлення системи..."
 sudo apt-get update && sudo apt-get upgrade -y
 
-echo "Встановлення необхідних пакетів (curl, git, nginx)..."
-sudo apt-get install -y curl git nginx
+echo "Встановлення необхідних пакетів (curl, git)..."
+sudo apt-get install -y curl git
 
 echo "Встановлення Docker..."
 if ! command -v docker &> /dev/null; then
