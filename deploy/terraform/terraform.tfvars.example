@@ -1,0 +1,5 @@
+# Windows:
+host_interface = "VirtualBox Host-Only Ethernet Adapter"
+
+# Linux:
+# host_interface = "vboxnet0"

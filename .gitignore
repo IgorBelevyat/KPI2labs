@@ -42,6 +42,10 @@ data/postgres/
 *.tfstate.backup
 .terraform/
 .terraform.lock.hcl
+terraform.tfvars
 
 # SSH private keys
 deploy/ssh_key
+
+# Vagrant boxes (downloaded by Terraform)
+*.box

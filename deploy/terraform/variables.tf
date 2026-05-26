@@ -41,9 +41,8 @@ variable "db_memory" {
 }
 
 variable "host_interface" {
-  description = "Ім'я Host-Only мережевого адаптера VirtualBox"
+  description = "Ім'я Host-Only мережевого адаптера VirtualBox (VBoxManage list hostonlyifs)"
   type        = string
-  default     = "vboxnet0"
 }
 
 variable "ssh_public_key_path" {
