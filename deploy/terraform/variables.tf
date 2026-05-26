@@ -1,7 +1,13 @@
-variable "vm_image" {
-  description = "URL або шлях до Vagrant box образу Ubuntu"
+variable "libvirt_uri" {
+  description = "URI підключення до libvirt"
   type        = string
-  default     = "https://app.vagrantup.com/bento/boxes/ubuntu-24.04/versions/202502.21.0/providers/virtualbox/amd64/vagrant.box"
+  default     = "qemu:///system"
+}
+
+variable "vm_image" {
+  description = "URL або шлях до cloud-образу Ubuntu 24.04 (qcow2)"
+  type        = string
+  default     = "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img"
 }
 
 variable "worker_name" {
@@ -17,32 +23,51 @@ variable "db_name" {
 }
 
 variable "worker_cpus" {
-  description = "Кількість CPU для worker VM"
+  description = "Кількість vCPU для worker VM"
   type        = number
   default     = 2
 }
 
 variable "worker_memory" {
   description = "Оперативна пам'ять для worker VM (MiB)"
-  type        = string
-  default     = "2048 mib"
+  type        = number
+  default     = 2048
+}
+
+variable "worker_disk_size" {
+  description = "Розмір диску worker VM (bytes)"
+  type        = number
+  default     = 10737418240  # 10 GB
 }
 
 variable "db_cpus" {
-  description = "Кількість CPU для DB VM"
+  description = "Кількість vCPU для DB VM"
   type        = number
   default     = 1
 }
 
 variable "db_memory" {
   description = "Оперативна пам'ять для DB VM (MiB)"
-  type        = string
-  default     = "1024 mib"
+  type        = number
+  default     = 1024
 }
 
-variable "host_interface" {
-  description = "Ім'я Host-Only мережевого адаптера VirtualBox (VBoxManage list hostonlyifs)"
+variable "db_disk_size" {
+  description = "Розмір диску DB VM (bytes)"
+  type        = number
+  default     = 10737418240  # 10 GB
+}
+
+variable "worker_ip" {
+  description = "Статична IP-адреса worker VM"
   type        = string
+  default     = "192.168.56.101"
+}
+
+variable "db_ip" {
+  description = "Статична IP-адреса DB VM"
+  type        = string
+  default     = "192.168.56.102"
 }
 
 variable "ssh_public_key_path" {

@@ -1,3 +1,4 @@
+#cloud-config
 users:
   - name: ansible
     sudo: ALL=(ALL) NOPASSWD:ALL

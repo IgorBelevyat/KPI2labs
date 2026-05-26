@@ -49,3 +49,4 @@ deploy/ssh_key
 
 # Vagrant boxes (downloaded by Terraform)
 *.box
+.boxes/

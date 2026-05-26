@@ -2,79 +2,137 @@ terraform {
   required_version = ">= 1.0"
 
   required_providers {
-    virtualbox = {
-      source  = "terra-farm/virtualbox"
-      version = "0.2.2-alpha.1"
-    }
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.0"
+    libvirt = {
+      source  = "dmacvicar/libvirt"
+      version = "~> 0.8"
     }
   }
 }
 
-provider "virtualbox" {}
-
-variable "worker_ip" {
-  description = "Статична IP-адреса для worker VM"
-  type        = string
-  default     = "192.168.56.101"
+provider "libvirt" {
+  uri = var.libvirt_uri
 }
 
-variable "db_ip" {
-  description = "Статична IP-адреса для db VM"
-  type        = string
-  default     = "192.168.56.102"
+# Мережа для ізоляції worker <-> db
+resource "libvirt_network" "lab_network" {
+  name      = "lab4-network"
+  mode      = "nat"
+  domain    = "lab4.local"
+  addresses = ["192.168.56.0/24"]
+
+  dhcp {
+    enabled = true
+  }
+
+  dns {
+    enabled = true
+  }
 }
 
-# VM1 — Worker (nginx + web application)
-resource "virtualbox_vm" "worker" {
+# Базовий образ Ubuntu 24.04
+resource "libvirt_volume" "ubuntu_base" {
+  name   = "ubuntu-24.04-base.qcow2"
+  pool   = "default"
+  source = var.vm_image
+  format = "qcow2"
+}
+
+# ---- Worker VM ----
+
+resource "libvirt_volume" "worker_disk" {
+  name           = "worker.qcow2"
+  pool           = "default"
+  base_volume_id = libvirt_volume.ubuntu_base.id
+  size           = var.worker_disk_size
+}
+
+resource "libvirt_cloudinit_disk" "worker_init" {
+  name      = "worker-cloudinit.iso"
+  pool      = "default"
+  user_data = templatefile("${path.module}/cloud-init.yml", {
+    ssh_public_key = trimspace(file(var.ssh_public_key_path))
+  })
+
+  network_config = templatefile("${path.module}/network-config.yml", {
+    ip_address = var.worker_ip
+  })
+}
+
+resource "libvirt_domain" "worker" {
   name   = var.worker_name
-  image  = var.vm_image
-  cpus   = var.worker_cpus
   memory = var.worker_memory
+  vcpu   = var.worker_cpus
 
+  cloudinit = libvirt_cloudinit_disk.worker_init.id
+
+  disk {
+    volume_id = libvirt_volume.worker_disk.id
+  }
+
+  network_interface {
+    network_id     = libvirt_network.lab_network.id
+    addresses      = [var.worker_ip]
+    wait_for_lease = true
+  }
+
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  graphics {
+    type        = "vnc"
+    listen_type = "address"
+  }
+}
+
+# ---- Database VM ----
+
+resource "libvirt_volume" "db_disk" {
+  name           = "db.qcow2"
+  pool           = "default"
+  base_volume_id = libvirt_volume.ubuntu_base.id
+  size           = var.db_disk_size
+}
+
+resource "libvirt_cloudinit_disk" "db_init" {
+  name      = "db-cloudinit.iso"
+  pool      = "default"
   user_data = templatefile("${path.module}/cloud-init.yml", {
     ssh_public_key = trimspace(file(var.ssh_public_key_path))
   })
+
+  network_config = templatefile("${path.module}/network-config.yml", {
+    ip_address = var.db_ip
+  })
 }
 
-# VM2 — Database (PostgreSQL)
-resource "virtualbox_vm" "db" {
+resource "libvirt_domain" "db" {
   name   = var.db_name
-  image  = var.vm_image
-  cpus   = var.db_cpus
   memory = var.db_memory
+  vcpu   = var.db_cpus
 
-  user_data = templatefile("${path.module}/cloud-init.yml", {
-    ssh_public_key = trimspace(file(var.ssh_public_key_path))
-  })
-}
+  cloudinit = libvirt_cloudinit_disk.db_init.id
 
-# Налаштування мережі — VirtualBox 7.x використовує hostonlynet
-resource "null_resource" "setup_worker_network" {
-  depends_on = [virtualbox_vm.worker]
+  disk {
+    volume_id = libvirt_volume.db_disk.id
+  }
 
-  provisioner "local-exec" {
-    command = <<-EOT
-      VBoxManage controlvm ${var.worker_name} poweroff 2>/dev/null || true
-      sleep 2
-      VBoxManage modifyvm ${var.worker_name} --nic1 hostonlynet --host-only-net1 "${var.host_interface}"
-      VBoxManage startvm ${var.worker_name} --type headless
-    EOT
+  network_interface {
+    network_id     = libvirt_network.lab_network.id
+    addresses      = [var.db_ip]
+    wait_for_lease = true
+  }
+
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  graphics {
+    type        = "vnc"
+    listen_type = "address"
   }
 }
-
-resource "null_resource" "setup_db_network" {
-  depends_on = [virtualbox_vm.db]
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      VBoxManage controlvm ${var.db_name} poweroff 2>/dev/null || true
-      sleep 2
-      VBoxManage modifyvm ${var.db_name} --nic1 hostonlynet --host-only-net1 "${var.host_interface}"
-      VBoxManage startvm ${var.db_name} --type headless
-    EOT
-  }
-}
-
