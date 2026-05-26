@@ -4,7 +4,7 @@ terraform {
   required_providers {
     libvirt = {
       source  = "dmacvicar/libvirt"
-      version = "~> 0.8"
+      version = "0.7.6"
     }
   }
 }
@@ -47,12 +47,11 @@ resource "libvirt_volume" "worker_disk" {
 }
 
 resource "libvirt_cloudinit_disk" "worker_init" {
-  name      = "worker-cloudinit.iso"
-  pool      = "default"
-  user_data = templatefile("${path.module}/cloud-init.yml", {
+  name           = "worker-cloudinit.iso"
+  pool           = "default"
+  user_data      = templatefile("${path.module}/cloud-init.yml", {
     ssh_public_key = trimspace(file(var.ssh_public_key_path))
   })
-
   network_config = templatefile("${path.module}/network-config.yml", {
     ip_address = var.worker_ip
   })
@@ -71,19 +70,19 @@ resource "libvirt_domain" "worker" {
 
   network_interface {
     network_id     = libvirt_network.lab_network.id
-    addresses      = [var.worker_ip]
     wait_for_lease = true
   }
 
   console {
     type        = "pty"
-    target_port = "0"
     target_type = "serial"
+    target_port = "0"
   }
 
   graphics {
-    type        = "vnc"
+    type        = "spice"
     listen_type = "address"
+    autoport    = true
   }
 }
 
@@ -97,12 +96,11 @@ resource "libvirt_volume" "db_disk" {
 }
 
 resource "libvirt_cloudinit_disk" "db_init" {
-  name      = "db-cloudinit.iso"
-  pool      = "default"
-  user_data = templatefile("${path.module}/cloud-init.yml", {
+  name           = "db-cloudinit.iso"
+  pool           = "default"
+  user_data      = templatefile("${path.module}/cloud-init.yml", {
     ssh_public_key = trimspace(file(var.ssh_public_key_path))
   })
-
   network_config = templatefile("${path.module}/network-config.yml", {
     ip_address = var.db_ip
   })
@@ -121,18 +119,18 @@ resource "libvirt_domain" "db" {
 
   network_interface {
     network_id     = libvirt_network.lab_network.id
-    addresses      = [var.db_ip]
     wait_for_lease = true
   }
 
   console {
     type        = "pty"
-    target_port = "0"
     target_type = "serial"
+    target_port = "0"
   }
 
   graphics {
-    type        = "vnc"
+    type        = "spice"
     listen_type = "address"
+    autoport    = true
   }
 }
