@@ -1,0 +1,67 @@
+- name: Install PostgreSQL
+  apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+
+- name: Ensure PostgreSQL is started and enabled
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Configure PostgreSQL listen_addresses
+  lineinfile:
+    path: /etc/postgresql/16/main/postgresql.conf
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '{{ postgresql_listen_addresses }}'"
+  notify: Restart PostgreSQL
+
+- name: Configure pg_hba.conf for worker access
+  template:
+    src: pg_hba.conf.j2
+    dest: /etc/postgresql/16/main/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: "0640"
+  notify: Restart PostgreSQL
+
+- name: Create database user
+  become_user: postgres
+  community.postgresql.postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    state: present
+
+- name: Create application database
+  become_user: postgres
+  community.postgresql.postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+    state: present
+
+- name: Install UFW
+  apt:
+    name: ufw
+    state: present
+
+- name: Allow SSH through UFW
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: Allow PostgreSQL only from worker
+  ufw:
+    rule: allow
+    port: "{{ db_port | string }}"
+    proto: tcp
+    from_ip: "{{ hostvars[groups['workers'][0]]['ansible_host'] }}"
+
+- name: Enable UFW with default deny
+  ufw:
+    state: enabled
+    default: deny
+    direction: incoming

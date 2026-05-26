@@ -1,0 +1,15 @@
+# PostgreSQL Client Authentication Configuration
+# Managed by Ansible — do not edit manually
+
+# Local connections
+local   all             postgres                                peer
+local   all             all                                     peer
+
+# IPv4 local connections
+host    all             all             127.0.0.1/32            scram-sha-256
+
+# Allow worker VM to connect
+host    {{ db_name }}   {{ db_user }}   {{ hostvars[groups['workers'][0]]['ansible_host'] }}/32   scram-sha-256
+
+# IPv6 local connections
+host    all             all             ::1/128                 scram-sha-256

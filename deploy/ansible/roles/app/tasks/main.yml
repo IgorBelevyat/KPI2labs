@@ -1,0 +1,92 @@
+- name: Install Node.js 20 LTS repository
+  shell: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+  args:
+    creates: /usr/share/keyrings/nodesource.gpg
+
+- name: Install Node.js
+  apt:
+    name: nodejs
+    state: present
+
+- name: Clone application repository
+  git:
+    repo: "{{ app_repo }}"
+    dest: "{{ app_dir }}"
+    version: "{{ app_branch }}"
+    force: yes
+
+- name: Install npm dependencies
+  npm:
+    path: "{{ app_dir }}"
+    ci: yes
+
+- name: Generate Prisma client
+  command: npx prisma generate
+  args:
+    chdir: "{{ app_dir }}"
+
+- name: Build application
+  command: npm run build
+  args:
+    chdir: "{{ app_dir }}"
+
+- name: Remove dev dependencies
+  command: npm prune --omit=dev
+  args:
+    chdir: "{{ app_dir }}"
+
+- name: Create config directory
+  file:
+    path: "{{ config_dir }}"
+    state: directory
+    owner: root
+    group: "{{ app_user }}"
+    mode: "0750"
+
+- name: Deploy application config
+  template:
+    src: config.json.j2
+    dest: "{{ config_dir }}/config.json"
+    owner: root
+    group: "{{ app_user }}"
+    mode: "0640"
+  notify: Restart mywebapp
+
+- name: Deploy environment file
+  template:
+    src: env.j2
+    dest: "{{ config_dir }}/env"
+    owner: root
+    group: "{{ app_user }}"
+    mode: "0640"
+  notify: Restart mywebapp
+
+- name: Run database migrations
+  command: npx prisma migrate deploy
+  args:
+    chdir: "{{ app_dir }}"
+  environment:
+    DATABASE_URL: "postgresql://{{ db_user }}:{{ db_password }}@{{ hostvars[groups['db'][0]]['ansible_host'] }}:{{ db_port }}/{{ db_name }}?schema=public"
+
+- name: Set application directory ownership
+  file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    recurse: yes
+
+- name: Deploy systemd service
+  template:
+    src: mywebapp.service.j2
+    dest: /etc/systemd/system/mywebapp.service
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart mywebapp
+
+- name: Enable and start mywebapp service
+  systemd:
+    name: mywebapp
+    state: started
+    enabled: yes

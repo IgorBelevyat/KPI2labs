@@ -1,0 +1,20 @@
+[Unit]
+Description=TicketBooking Web Application
+After=network.target
+
+[Service]
+Type=simple
+User={{ app_user }}
+Group={{ app_user }}
+WorkingDirectory={{ app_dir }}
+EnvironmentFile={{ config_dir }}/env
+Environment=PATH=/usr/bin:/usr/local/bin:{{ app_dir }}/node_modules/.bin
+ExecStartPre=/usr/bin/npx prisma migrate deploy
+ExecStart=/usr/bin/node dist/server.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

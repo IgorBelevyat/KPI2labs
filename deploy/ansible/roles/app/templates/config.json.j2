@@ -1,0 +1,10 @@
+{
+  "host": "127.0.0.1",
+  "port": {{ app_port }},
+  "database_url": "postgresql://{{ db_user }}:{{ db_password }}@{{ hostvars[groups['db'][0]]['ansible_host'] }}:{{ db_port }}/{{ db_name }}?schema=public",
+  "jwt_access_secret": "change-me-access-secret",
+  "jwt_refresh_secret": "change-me-refresh-secret",
+  "jwt_access_expires_in": "15m",
+  "jwt_refresh_expires_in": "7d",
+  "node_env": "production"
+}
