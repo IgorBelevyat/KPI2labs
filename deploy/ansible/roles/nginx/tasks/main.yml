@@ -1,0 +1,30 @@
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Remove default site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload Nginx
+
+- name: Deploy mywebapp Nginx config
+  template:
+    src: mywebapp.conf.j2
+    dest: /etc/nginx/sites-available/mywebapp
+    mode: "0644"
+  notify: Reload Nginx
+
+- name: Enable mywebapp site
+  file:
+    src: /etc/nginx/sites-available/mywebapp
+    dest: /etc/nginx/sites-enabled/mywebapp
+    state: link
+  notify: Reload Nginx
+
+- name: Ensure Nginx is started and enabled
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
