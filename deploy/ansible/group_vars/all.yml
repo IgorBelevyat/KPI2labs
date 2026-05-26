@@ -1,0 +1,14 @@
+app_repo: "https://github.com/IgorBelevyat/KPI2labs.git"
+app_branch: lab4
+app_dir: /opt/mywebapp
+config_dir: /etc/mywebapp
+variant_number: 3
+
+app_port: 8000
+db_port: 5432
+db_name: ticket_booking
+db_user: mywebapp
+db_password: mywebapp_password
+
+teacher_password: "12345678"
+operator_password: "12345678"

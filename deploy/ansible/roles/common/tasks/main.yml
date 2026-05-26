@@ -1,0 +1,52 @@
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Create teacher user
+  user:
+    name: teacher
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+    password: "{{ teacher_password | password_hash('sha512') }}"
+
+- name: Create app system user
+  user:
+    name: app
+    system: yes
+    shell: /usr/sbin/nologin
+    create_home: no
+  when: inventory_hostname in groups['workers']
+
+- name: Create operator user
+  user:
+    name: operator
+    shell: /bin/bash
+    password: "{{ operator_password | password_hash('sha512') }}"
+  when: inventory_hostname in groups['workers']
+
+- name: Configure sudoers for operator
+  copy:
+    dest: /etc/sudoers.d/operator
+    content: |
+      operator ALL=(ALL) NOPASSWD: /usr/bin/systemctl start mywebapp
+      operator ALL=(ALL) NOPASSWD: /usr/bin/systemctl stop mywebapp
+      operator ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart mywebapp
+      operator ALL=(ALL) NOPASSWD: /usr/bin/systemctl status mywebapp
+      operator ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload nginx
+    mode: "0440"
+    validate: "visudo -cf %s"
+  when: inventory_hostname in groups['workers']
+
+- name: Create student home directory
+  file:
+    path: /home/student
+    state: directory
+    mode: "0755"
+
+- name: Create gradebook file
+  copy:
+    dest: /home/student/gradebook
+    content: "{{ variant_number }}"
+    mode: "0644"

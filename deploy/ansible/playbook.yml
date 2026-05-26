@@ -1,0 +1,16 @@
+---
+- name: Common setup for all VMs
+  hosts: all
+  roles:
+    - common
+
+- name: Database server setup
+  hosts: db
+  roles:
+    - database
+
+- name: Application server setup
+  hosts: workers
+  roles:
+    - app
+    - nginx
