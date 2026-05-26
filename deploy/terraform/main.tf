@@ -84,6 +84,22 @@ resource "libvirt_domain" "worker" {
     listen_type = "address"
     autoport    = true
   }
+
+  # QEMU емуляція (без KVM) для nested virtualization
+  xml {
+    xslt = <<-XSLT
+      <?xml version="1.0" ?>
+      <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:output omit-xml-declaration="yes" indent="yes"/>
+        <xsl:template match="node()|@*">
+          <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>
+        </xsl:template>
+        <xsl:template match="/domain/@type">
+          <xsl:attribute name="type">qemu</xsl:attribute>
+        </xsl:template>
+      </xsl:stylesheet>
+    XSLT
+  }
 }
 
 # ---- Database VM ----
@@ -132,5 +148,21 @@ resource "libvirt_domain" "db" {
     type        = "spice"
     listen_type = "address"
     autoport    = true
+  }
+
+  # QEMU емуляція (без KVM) для nested virtualization
+  xml {
+    xslt = <<-XSLT
+      <?xml version="1.0" ?>
+      <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:output omit-xml-declaration="yes" indent="yes"/>
+        <xsl:template match="node()|@*">
+          <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>
+        </xsl:template>
+        <xsl:template match="/domain/@type">
+          <xsl:attribute name="type">qemu</xsl:attribute>
+        </xsl:template>
+      </xsl:stylesheet>
+    XSLT
   }
 }
