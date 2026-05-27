@@ -6,6 +6,10 @@ terraform {
       source  = "dmacvicar/libvirt"
       version = "0.7.6"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -128,5 +132,58 @@ resource "libvirt_domain" "db" {
     type        = "spice"
     listen_type = "address"
     autoport    = true
+  }
+}
+
+# ---- Ansible Provisioning ----
+
+resource "null_resource" "ansible" {
+  depends_on = [libvirt_domain.worker, libvirt_domain.db]
+
+  # Перезапускати при зміні IP
+  triggers = {
+    worker_ip = libvirt_domain.worker.network_interface[0].addresses[0]
+    db_ip     = libvirt_domain.db.network_interface[0].addresses[0]
+  }
+
+  # Генерація динамічного inventory
+  provisioner "local-exec" {
+    command = <<-EOT
+      # Копіювати SSH ключ з правильними permissions
+      cp ${path.module}/../ssh_key /tmp/lab4_key
+      chmod 600 /tmp/lab4_key
+
+      # Створити динамічний inventory
+      cat > /tmp/lab4_inventory.ini <<EOF
+      [workers]
+      worker ansible_host=${libvirt_domain.worker.network_interface[0].addresses[0]}
+
+      [db]
+      db ansible_host=${libvirt_domain.db.network_interface[0].addresses[0]}
+
+      [all:vars]
+      ansible_user=ansible
+      ansible_ssh_private_key_file=/tmp/lab4_key
+      ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+      EOF
+
+      # Чекати поки SSH стане доступним
+      echo "Waiting for SSH on worker..."
+      for i in $(seq 1 30); do
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/lab4_key ansible@${libvirt_domain.worker.network_interface[0].addresses[0]} true 2>/dev/null && break
+        sleep 5
+      done
+
+      echo "Waiting for SSH on db..."
+      for i in $(seq 1 30); do
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/lab4_key ansible@${libvirt_domain.db.network_interface[0].addresses[0]} true 2>/dev/null && break
+        sleep 5
+      done
+
+      # Запуск Ansible
+      cd ${path.module}/../ansible
+      export ANSIBLE_CONFIG=./ansible.cfg
+      ansible-playbook -i /tmp/lab4_inventory.ini --become --become-method=sudo playbook.yml
+    EOT
   }
 }

@@ -50,3 +50,10 @@
     dest: /home/student/gradebook
     content: "{{ variant_number }}"
     mode: "0644"
+
+- name: Enable SSH password authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?PasswordAuthentication"
+    line: "PasswordAuthentication yes"
+  notify: Restart sshd

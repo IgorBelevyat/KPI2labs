@@ -58,18 +58,6 @@ variable "db_disk_size" {
   default     = 10737418240  # 10 GB
 }
 
-variable "worker_ip" {
-  description = "Статична IP-адреса worker VM"
-  type        = string
-  default     = "192.168.56.101"
-}
-
-variable "db_ip" {
-  description = "Статична IP-адреса DB VM"
-  type        = string
-  default     = "192.168.56.102"
-}
-
 variable "ssh_public_key_path" {
   description = "Шлях до файлу публічного SSH-ключа"
   type        = string

@@ -1,5 +1,6 @@
-# Windows:
-host_interface = "VirtualBox Host-Only Ethernet Adapter"
+# Приклад конфігурації
+# Скопіюйте цей файл як terraform.tfvars та змініть значення
 
-# Linux:
-# host_interface = "vboxnet0"
+# vm_image = "/path/to/ubuntu-24.04-server-cloudimg-amd64.img"
+# worker_memory = 2048
+# db_memory = 1024
