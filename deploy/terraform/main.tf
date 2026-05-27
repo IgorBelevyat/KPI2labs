@@ -52,9 +52,7 @@ resource "libvirt_cloudinit_disk" "worker_init" {
   user_data      = templatefile("${path.module}/cloud-init.yml", {
     ssh_public_key = trimspace(file(var.ssh_public_key_path))
   })
-  network_config = templatefile("${path.module}/network-config.yml", {
-    ip_address = var.worker_ip
-  })
+  network_config = file("${path.module}/network-config.yml")
 }
 
 resource "libvirt_domain" "worker" {
@@ -101,9 +99,7 @@ resource "libvirt_cloudinit_disk" "db_init" {
   user_data      = templatefile("${path.module}/cloud-init.yml", {
     ssh_public_key = trimspace(file(var.ssh_public_key_path))
   })
-  network_config = templatefile("${path.module}/network-config.yml", {
-    ip_address = var.db_ip
-  })
+  network_config = file("${path.module}/network-config.yml")
 }
 
 resource "libvirt_domain" "db" {
