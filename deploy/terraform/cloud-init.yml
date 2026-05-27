@@ -3,6 +3,8 @@ users:
   - name: ansible
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
+    lock_passwd: false
+    passwd: $6$rounds=4096$salt$JvKh2BNBf7R9MFxPe4IuVOk5m8HcSxl3oDhkGirJqBnSp8QGZWjr5YVWX8GdLqGanqcW.jNABk6N8JTsVERQ0
     ssh_authorized_keys:
       - ${ssh_public_key}
 
@@ -12,6 +14,10 @@ package_upgrade: false
 packages:
   - python3
   - python3-apt
+  - qemu-guest-agent
 
 chpasswd:
   expire: false
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent

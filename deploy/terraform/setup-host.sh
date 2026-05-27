@@ -3,11 +3,20 @@ set -e
 
 echo "==> Встановлення залежностей..."
 sudo apt update
-sudo apt install -y qemu-kvm libvirt-daemon-system libvirt-dev genisoimage
+sudo apt install -y qemu-kvm libvirt-daemon-system libvirt-dev genisoimage xsltproc wget
 
 echo "==> Додавання користувача в групу libvirt..."
 sudo usermod -aG libvirt $(whoami)
 sudo usermod -aG kvm $(whoami)
+
+echo "==> Налаштування QEMU (вимкнення security driver)..."
+if ! grep -q 'security_driver = "none"' /etc/libvirt/qemu.conf 2>/dev/null; then
+  echo 'security_driver = "none"' | sudo tee -a /etc/libvirt/qemu.conf
+  sudo systemctl restart libvirtd
+  echo "    Security driver вимкнено"
+else
+  echo "    Security driver вже налаштований"
+fi
 
 echo "==> Створення storage pool..."
 if ! sudo virsh pool-info default &>/dev/null; then

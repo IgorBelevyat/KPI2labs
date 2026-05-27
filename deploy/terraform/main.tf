@@ -70,7 +70,7 @@ resource "libvirt_domain" "worker" {
 
   network_interface {
     network_id     = libvirt_network.lab_network.id
-    wait_for_lease = true
+    wait_for_lease = false
   }
 
   console {
@@ -135,7 +135,7 @@ resource "libvirt_domain" "db" {
 
   network_interface {
     network_id     = libvirt_network.lab_network.id
-    wait_for_lease = true
+    wait_for_lease = false
   }
 
   console {
